@@ -1,20 +1,24 @@
 using TMPro;
 using UnityEngine;
 
-public class ConsoleCamera : MonoBehaviour
+namespace UnityConsole
 {
-    [SerializeField] private TextMeshProUGUI consoleText;
-    [SerializeField] private float consoleBottom = 7;
-
-    private void Update()
+    public class ConsoleCamera : MonoBehaviour
     {
-        Vector2 renderedValues = consoleText.GetRenderedValues();
-        if (renderedValues.y < consoleBottom)
+        [SerializeField] private TextMeshProUGUI consoleText;
+        [SerializeField] private float consoleBottom = 7;
+
+        private void Update()
         {
-            transform.position = new Vector3(transform.position.x, 0, transform.position.z);
-            return;
+            Vector2 renderedValues = consoleText.GetRenderedValues();
+            Vector3 position = transform.position;
+            if (renderedValues.y < consoleBottom)
+            {
+                transform.position = new Vector3(position.x, 0, position.z);
+                return;
+            }
+
+            transform.position = new Vector3(position.x, consoleBottom - renderedValues.y, position.z);
         }
-        
-        transform.position = new Vector3(transform.position.x, consoleBottom - renderedValues.y, transform.position.z);
     }
 }

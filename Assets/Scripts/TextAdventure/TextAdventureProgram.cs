@@ -1,8 +1,7 @@
-using System;
-using System.Text;
 using System.Threading.Tasks;
 using Text_Based_Game.Classes;
 using UnityEngine;
+using Console = UnityConsole.Console;
 
 namespace Text_Based_Game
 {

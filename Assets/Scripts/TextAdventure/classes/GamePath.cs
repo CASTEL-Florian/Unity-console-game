@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
-using UnityEditor;
 using UnityEngine;
 using Random = System.Random;
-
+using Console = UnityConsole.Console;
 
 namespace Text_Based_Game.Classes
 {
@@ -216,8 +214,7 @@ namespace Text_Based_Game.Classes
             //GameManager.HandleInputBuffering();
             Console.Write("Do you want to go back to (t)own, change your (e)quipment or (c)ontinue your adventure?: ");
             KeyCode key = await Console.ReadKey();
-            bool validInput = false;
-            if (key == KeyCode.T || key == KeyCode.C || key == KeyCode.E) validInput = true;
+            bool validInput = key == KeyCode.T || key == KeyCode.C || key == KeyCode.E;
             while (!validInput)
             {
                 Console.Write("\nNo choice was made, please try again: ");
@@ -258,8 +255,7 @@ namespace Text_Based_Game.Classes
                 Console.WriteLine("This run took you: " + Globals.EndTime.Subtract(Globals.StartTime));
                 Console.Write($"\nDo you want to (s)tart Journey {Globals.NewGameModifier + 1} or (q)uit : ");
                 KeyCode key = await Console.ReadKey();
-                bool validInput = false;
-                if (key == KeyCode.S || key == KeyCode.Q) validInput = true;
+                bool validInput = key == KeyCode.S || key == KeyCode.Q;
                 while (!validInput)
                 {
                     Console.Write("\nNo choice was made, please try again: ");

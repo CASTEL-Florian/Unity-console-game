@@ -1,9 +1,9 @@
 using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using Random = System.Random;
+using Console = UnityConsole.Console;
 
 namespace Text_Based_Game.Classes
 {

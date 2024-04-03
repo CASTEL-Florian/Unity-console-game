@@ -2,7 +2,7 @@ using System;
 
 namespace Text_Based_Game.Classes
 {
-    static internal class Globals
+    internal static class Globals
     {
         public static int NewGameModifier = 1;
         public const string TitlePath = "Content/title.txt";
