@@ -1,6 +1,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
+using Console = UnityConsole.Console;
 
 namespace Text_Based_Game.Classes
 {
@@ -73,7 +74,7 @@ namespace Text_Based_Game.Classes
 #if !DEBUG_MODE
                 foreach (string line in fileLines)
                 {
-                    await PrintStringCharByChar(line, Color.gray);
+                    await PrintStringCharByChar(line, new Color(0.9f, 0.9f, 0.9f));
                     await Console.Sleep(500);
                     Console.WriteLine();
                 }
