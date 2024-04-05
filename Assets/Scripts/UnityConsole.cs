@@ -111,26 +111,35 @@ namespace UnityConsole
 
         public void Write(string value)
         {
-            bodyText += value;
+            bodyText += value.Replace("\n", "<br>");
             needsUpdate = true;
         }
 
         public void Write(char value)
         {
-
-            bodyText += value;
+            if (value == '\r')
+            {
+                return;
+            } 
+            if (value == '\n')
+            {
+                bodyText += "<br>";
+            }
+            else
+            {
+                bodyText += value;
+            }
             needsUpdate = true;
         }
 
         public void WriteLine(string value)
         {
-            bodyText += value + "\n";
-            needsUpdate = true;
+            Write(value + "<br>");
         }
 
         public void WriteLine()
         {
-            bodyText += "\n";
+            bodyText += "<br>";
             needsUpdate = true;
         }
 

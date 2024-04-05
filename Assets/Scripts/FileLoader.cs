@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -13,7 +14,7 @@ namespace UnityConsole
       {
          if (Application.platform == RuntimePlatform.WebGLPlayer)
          {
-            return (await LoadFileTextWebGL(path)).Split('\n');
+            return (await LoadFileTextWebGL(path)).Split('\n').Select((x) => x.Trim('\r')).ToArray();
          }
 
          return await File.ReadAllLinesAsync(path);

@@ -38,7 +38,6 @@ namespace Text_Based_Game.Classes
         {
             Random = new();
             Player = new(this);
-            CurrentPath = GeneratePath(PathDifficulty.Easy);
         }
 
         // METHODS
@@ -50,6 +49,7 @@ namespace Text_Based_Game.Classes
         {
             //Console.WriteLine("TESTING NewGameModifier: " + Globals.NewGameModifier);
             Globals.StartTime = DateTime.Now;
+            CurrentPath = GeneratePath(PathDifficulty.Easy);
             await CurrentPath.TraversePath();
         }
 

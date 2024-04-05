@@ -272,7 +272,7 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// Reads all lines of a file containing weapon names and returns a random name
         /// </summary>
-        public async UniTask<string> GenerateWeaponName()
+        public async UniTask GenerateWeaponName()
         {
             string[] allNames;
 
@@ -281,24 +281,29 @@ namespace Text_Based_Game.Classes
                 case Rarity.Common:
                     allNames = await FileLoader.ReadAllLinesAsync
 (Path.Combine(Application.streamingAssetsPath, Globals.CommonNamePath));
-                    return allNames[Random.Next(allNames.Length)];
+                    Name = allNames[Random.Next(allNames.Length)];
+                    break;
 
                 case Rarity.Uncommon:
                     allNames = await FileLoader.ReadAllLinesAsync
 (Path.Combine(Application.streamingAssetsPath,Globals.UncommonNamePath));
-                    return allNames[Random.Next(allNames.Length)];
+                    Name = allNames[Random.Next(allNames.Length)];
+                    break;
 
                 case Rarity.Rare:
                     allNames = await FileLoader.ReadAllLinesAsync
 (Path.Combine(Application.streamingAssetsPath,Globals.RareNamePath));
-                    return allNames[Random.Next(allNames.Length)];
+                    Name = allNames[Random.Next(allNames.Length)];
+                    break;
 
                 case Rarity.Epic:
                     allNames = await FileLoader.ReadAllLinesAsync
 (Path.Combine(Application.streamingAssetsPath,Globals.EpicNamePath));
-                    return allNames[Random.Next(allNames.Length)];
+                    Name = allNames[Random.Next(allNames.Length)];
+                    break;
                 default:
-                    return "Forlorn Baguette";
+                    Name = "Forlorn Baguette";
+                    break;
             }
         }
     }

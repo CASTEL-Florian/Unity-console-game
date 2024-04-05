@@ -135,11 +135,11 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// Reads file containing mob names and returns a random name
         /// </summary>
-        public async UniTask<string> GenerateRandomMobName()
+        public async UniTask GenerateRandomMobName()
         {
             string[] allNames = await FileLoader.ReadAllLinesAsync
 (Path.Combine(Application.streamingAssetsPath, Globals.MobNamesPath));
-            return allNames[Random.Next(allNames.Length)];
+            Name = allNames[Random.Next(allNames.Length)];
         }
     }
 }
