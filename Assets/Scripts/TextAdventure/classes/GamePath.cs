@@ -171,11 +171,21 @@ namespace Text_Based_Game.Classes
                         break;
                     case PathStepType.MobFight:
                         Enemy currentEnemy = new(Difficulty);
+                        await currentEnemy.GenerateRandomMobName();
+                        if (currentEnemy.WeaponToDrop != null)
+                        {
+                            await currentEnemy.WeaponToDrop.GenerateWeaponName();
+                        }
                         await GameManagerRef.SimulateRegularCombat(currentEnemy);
                         await ShowOptionsAfterInteractiveEvent();
                         break;
                     case PathStepType.BossFight:
                         Boss currentBoss = new(Difficulty);
+                        await currentBoss.GenerateRandomMobName();
+                        if (currentBoss.WeaponToDrop != null)
+                        {
+                            await currentBoss.WeaponToDrop.GenerateWeaponName();
+                        }
                         currentBoss.Name = await currentBoss.RandomBossName();
                         await GameManagerRef.SimulateBossCombat(currentBoss);
                         if (i != PathSteps.Count - 1)

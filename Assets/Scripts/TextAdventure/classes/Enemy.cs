@@ -1,5 +1,7 @@
 #nullable enable
 using System.IO;
+using Cysharp.Threading.Tasks;
+using UnityConsole;
 using UnityEngine;
 using Random = System.Random;
 
@@ -24,7 +26,7 @@ namespace Text_Based_Game.Classes
         public Enemy(PathDifficulty difficulty)
         {
             Random = new();
-            Name = RandomMobName();
+            Name = "Enemy";
             StatMultiplier = GetStatMultiplier(difficulty);
             if (Random.NextDouble() < 0.25f)
             {
@@ -133,9 +135,10 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// Reads file containing mob names and returns a random name
         /// </summary>
-        private string RandomMobName()
+        public async UniTask<string> GenerateRandomMobName()
         {
-            string[] allNames = File.ReadAllLines(Path.Combine(Application.streamingAssetsPath, Globals.MobNamesPath));
+            string[] allNames = await FileLoader.ReadAllLinesAsync
+(Path.Combine(Application.streamingAssetsPath, Globals.MobNamesPath));
             return allNames[Random.Next(allNames.Length)];
         }
     }

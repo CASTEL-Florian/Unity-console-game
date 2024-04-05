@@ -13,13 +13,33 @@ namespace UnityConsole
       {
          if (Application.platform == RuntimePlatform.WebGLPlayer)
          {
-            return (await LoadFileWebGL(path)).Split('\n');
+            return (await LoadFileTextWebGL(path)).Split('\n');
          }
 
          return await File.ReadAllLinesAsync(path);
       }
+      
+      public static async UniTask<string> ReadAllTextAsync(string path)
+      {
+         if (Application.platform == RuntimePlatform.WebGLPlayer)
+         {
+            return await LoadFileTextWebGL(path);
+         }
 
-      private static async UniTask<string> LoadFileWebGL(string filePath)
+         return await File.ReadAllTextAsync(path);
+      }
+      
+      public static async UniTask<byte[]> ReadAllBytesAsync(string path)
+      {
+         if (Application.platform == RuntimePlatform.WebGLPlayer)
+         {
+            return await LoadFileBytesWebGL(path);
+         }
+
+         return await File.ReadAllBytesAsync(path);
+      }
+
+      private static async UniTask<string> LoadFileTextWebGL(string filePath)
       {
          using (UnityWebRequest webRequest =
                 UnityWebRequest.Get(filePath))
@@ -31,6 +51,21 @@ namespace UnityConsole
                return "";
             }
             return webRequest.downloadHandler.text;
+         }
+      }
+      
+      private static async UniTask<byte[]> LoadFileBytesWebGL(string filePath)
+      {
+         using (UnityWebRequest webRequest =
+                UnityWebRequest.Get(filePath))
+         {
+            await webRequest.SendWebRequest();
+            if (webRequest.result != UnityWebRequest.Result.Success)
+            {
+               Debug.LogError(webRequest.error);
+               return Array.Empty<byte>();
+            }
+            return webRequest.downloadHandler.data;
          }
       }
    }

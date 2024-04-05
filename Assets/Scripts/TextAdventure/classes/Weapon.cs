@@ -1,4 +1,6 @@
 using System.IO;
+using Cysharp.Threading.Tasks;
+using UnityConsole;
 using UnityEngine;
 using Random = System.Random;
 
@@ -30,7 +32,6 @@ namespace Text_Based_Game.Classes
         {
             Random = new();
             Rarity = rarity;
-            Name = WeaponName();
             MinAttacksPerTurn = GenerateMinAttacks();
             MaxAttacksPerTurn = GenerateMaxAttacks();
             VitalityBonus = GenerateStatBonus();
@@ -271,26 +272,30 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// Reads all lines of a file containing weapon names and returns a random name
         /// </summary>
-        private string WeaponName()
+        public async UniTask<string> GenerateWeaponName()
         {
             string[] allNames;
 
             switch (Rarity)
             {
                 case Rarity.Common:
-                    allNames = File.ReadAllLines(Path.Combine(Application.streamingAssetsPath, Globals.CommonNamePath));
+                    allNames = await FileLoader.ReadAllLinesAsync
+(Path.Combine(Application.streamingAssetsPath, Globals.CommonNamePath));
                     return allNames[Random.Next(allNames.Length)];
 
                 case Rarity.Uncommon:
-                    allNames = File.ReadAllLines(Path.Combine(Application.streamingAssetsPath,Globals.UncommonNamePath));
+                    allNames = await FileLoader.ReadAllLinesAsync
+(Path.Combine(Application.streamingAssetsPath,Globals.UncommonNamePath));
                     return allNames[Random.Next(allNames.Length)];
 
                 case Rarity.Rare:
-                    allNames = File.ReadAllLines(Path.Combine(Application.streamingAssetsPath,Globals.RareNamePath));
+                    allNames = await FileLoader.ReadAllLinesAsync
+(Path.Combine(Application.streamingAssetsPath,Globals.RareNamePath));
                     return allNames[Random.Next(allNames.Length)];
 
                 case Rarity.Epic:
-                    allNames = File.ReadAllLines(Path.Combine(Application.streamingAssetsPath,Globals.EpicNamePath));
+                    allNames = await FileLoader.ReadAllLinesAsync
+(Path.Combine(Application.streamingAssetsPath,Globals.EpicNamePath));
                     return allNames[Random.Next(allNames.Length)];
                 default:
                     return "Forlorn Baguette";

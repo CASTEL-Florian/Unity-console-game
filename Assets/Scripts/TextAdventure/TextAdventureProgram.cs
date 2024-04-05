@@ -60,7 +60,7 @@ namespace Text_Based_Game
             TextHelper.LineSpacing();
             // initialize GameManager
             GameManager gameManager = new();
-            await gameManager.LoadEnvironmentObservations();
+            await gameManager.LoadFiles();
             // start game
             await gameManager.StartGame();
         }

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
+using UnityConsole;
 using UnityEngine;
 using Random = System.Random;
 using Console = UnityConsole.Console;
@@ -24,9 +25,9 @@ namespace Text_Based_Game.Classes
         private readonly int MinPathLengthHard = 15;
         private readonly int MaxPathLengthFinal = 30;
         private readonly int MinPathLengthFinal = 20;
-        private readonly string[] ReturnToTownMessages;
-        private readonly string[] PathStartMessages;
-        private readonly string[] PathCompletionMessages;
+        private string[] ReturnToTownMessages;
+        private string[] PathStartMessages;
+        private string[] PathCompletionMessages;
         
         private readonly Color darkRed = new Color(0.772f, 0.059f, 0.122f);
         private readonly Color darkYellow = new Color(0.933f, 0.667f, 0);
@@ -37,9 +38,6 @@ namespace Text_Based_Game.Classes
         {
             Random = new();
             Player = new(this);
-            ReturnToTownMessages = File.ReadAllLines(Path.Combine(Application.streamingAssetsPath, Globals.ReturnToTownMessagesPath));
-            PathStartMessages = File.ReadAllLines(Path.Combine(Application.streamingAssetsPath, Globals.PathStartMessagesPath));
-            PathCompletionMessages = File.ReadAllLines(Path.Combine(Application.streamingAssetsPath, Globals.PathCompletionMessagesPath));
             CurrentPath = GeneratePath(PathDifficulty.Easy);
         }
 
@@ -55,8 +53,14 @@ namespace Text_Based_Game.Classes
             await CurrentPath.TraversePath();
         }
 
-        public async UniTask LoadEnvironmentObservations()
+        public async UniTask LoadFiles()
         {
+            ReturnToTownMessages = await FileLoader.ReadAllLinesAsync
+                (Path.Combine(Application.streamingAssetsPath, Globals.ReturnToTownMessagesPath));
+            PathStartMessages = await FileLoader.ReadAllLinesAsync
+                (Path.Combine(Application.streamingAssetsPath, Globals.PathStartMessagesPath));
+            PathCompletionMessages = await FileLoader.ReadAllLinesAsync
+                (Path.Combine(Application.streamingAssetsPath, Globals.PathCompletionMessagesPath));
             await Player.LoadEnvironmentObservations();
         }
 
