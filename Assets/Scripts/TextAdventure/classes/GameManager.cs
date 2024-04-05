@@ -160,19 +160,19 @@ namespace Text_Based_Game.Classes
                 else
                 {
                     int[] playerAttack = Player.CalculateAttack();
+                    boss.TakeDamage(playerAttack[1]);
                     if (playerAttack[0] == 0)
                     {
                         TextHelper.PrintTextInColor($"You attack {boss.Name} but trip and whiff entirely", Color.red);
                     }
                     else if (playerAttack[0] == 1)
                     {
-                        TextHelper.PrintTextInColor($"You attack {boss.Name} and do {playerAttack[1]} dmg", Color.red);
+                        TextHelper.PrintTextInColor($"You attack {boss.Name} and do {playerAttack[1]} dmg, {boss.CurrentHp}/{boss.MaxHp} HP", Color.red);
                     }
                     else
                     {
-                        TextHelper.PrintTextInColor($"You attack {boss.Name} {playerAttack[0]} times for a total of {playerAttack[1]} dmg", Color.red);
+                        TextHelper.PrintTextInColor($"You attack {boss.Name} {playerAttack[0]} times for a total of {playerAttack[1]} dmg, {boss.CurrentHp}/{boss.MaxHp} HP", Color.red);
                     }
-                    boss.TakeDamage(playerAttack[1]);
                 }
                 await Console.Sleep(500);
 

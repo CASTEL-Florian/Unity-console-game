@@ -15,6 +15,7 @@ namespace Text_Based_Game.Classes
         public Boss(PathDifficulty difficulty) : base(difficulty)
         {
             CurrentHp = (int)(CurrentHp * BossMultiplier);
+            MaxHp = (int)(MaxHp * BossMultiplier);
             XpDropped *= BossMultiplier;
             MinDamage = (int)(MinDamage * BossMultiplier);
             MaxDamage = (int)(MaxDamage * BossMultiplier);
