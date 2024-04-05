@@ -1,5 +1,7 @@
 using System.IO;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
+using UnityConsole;
 using UnityEngine;
 using Console = UnityConsole.Console;
 
@@ -7,15 +9,15 @@ namespace Text_Based_Game.Classes
 {
     static class TextHelper
     {
-        public static async Task PrintDeathAnimation(Color color)
+        public static async UniTask PrintDeathAnimation(Color color)
         {
-            var frame1 = await File.ReadAllLinesAsync(Path.Combine(Application.streamingAssetsPath, "Content/death1.txt"));
-            var frame2 = await File.ReadAllLinesAsync(Path.Combine(Application.streamingAssetsPath,"Content/death2.txt"));
-            var frame3 = await File.ReadAllLinesAsync(Path.Combine(Application.streamingAssetsPath,"Content/death3.txt"));
-            var frame4 = await File.ReadAllLinesAsync(Path.Combine(Application.streamingAssetsPath,"Content/death4.txt"));
-            var frame5 = await File.ReadAllLinesAsync(Path.Combine(Application.streamingAssetsPath,"Content/death5.txt"));
-            var frame6 = await File.ReadAllLinesAsync(Path.Combine(Application.streamingAssetsPath,"Content/death6.txt"));
-            var frame7 = await File.ReadAllLinesAsync(Path.Combine(Application.streamingAssetsPath,"Content/death7.txt"));
+            var frame1 = await FileLoader.ReadAllLinesAsync(Path.Combine(Application.streamingAssetsPath, "Content/death1.txt"));
+            var frame2 = await FileLoader.ReadAllLinesAsync(Path.Combine(Application.streamingAssetsPath,"Content/death2.txt"));
+            var frame3 = await FileLoader.ReadAllLinesAsync(Path.Combine(Application.streamingAssetsPath,"Content/death3.txt"));
+            var frame4 = await FileLoader.ReadAllLinesAsync(Path.Combine(Application.streamingAssetsPath,"Content/death4.txt"));
+            var frame5 = await FileLoader.ReadAllLinesAsync(Path.Combine(Application.streamingAssetsPath,"Content/death5.txt"));
+            var frame6 = await FileLoader.ReadAllLinesAsync(Path.Combine(Application.streamingAssetsPath,"Content/death6.txt"));
+            var frame7 = await FileLoader.ReadAllLinesAsync(Path.Combine(Application.streamingAssetsPath,"Content/death7.txt"));
 
             Console.Clear();
             ChangeForegroundColor(color);
@@ -65,9 +67,9 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// Reads all lines in a file and either prints it line by line or letter by letter.
         /// </summary>
-        public static async Task PrintTextFile(string path, bool letterByLetter)
+        public static async UniTask PrintTextFile(string path, bool letterByLetter)
         {
-            string[] fileLines = await File.ReadAllLinesAsync(Path.Combine(Application.streamingAssetsPath, path));
+            string[] fileLines = await FileLoader.ReadAllLinesAsync(Path.Combine(Application.streamingAssetsPath, path));
 
             if (letterByLetter)
             {
@@ -99,7 +101,7 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// Prints a string one character at a time. Can write text in color specified.
         /// </summary>
-        public static async Task PrintStringCharByChar(string line, Color color)
+        public static async UniTask PrintStringCharByChar(string line, Color color)
         {
             ChangeForegroundColor(color);
             foreach (char c in line)

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using TMPro;
 
@@ -134,7 +135,7 @@ namespace UnityConsole
             needsUpdate = true;
         }
 
-        public async Task<string> ReadLine()
+        public async UniTask<string> ReadLine()
         {
             isGettingLine = true;
             isBlinkCursorActive = true;
@@ -146,7 +147,7 @@ namespace UnityConsole
             return result;
         }
 
-        public async Task<KeyCode> ReadKey()
+        public async UniTask<KeyCode> ReadKey()
         {
             isGettingKey = true;
             isBlinkCursorActive = true;

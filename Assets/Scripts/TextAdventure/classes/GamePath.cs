@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Random = System.Random;
 using Console = UnityConsole.Console;
@@ -148,7 +149,7 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// 
         /// </summary>
-        public async Task TraversePath()
+        public async UniTask TraversePath()
         {
             PlayerRef.SetCurrentHpToMax();
             PlayerRef.CurrentLocation = Location.Path;
@@ -175,6 +176,7 @@ namespace Text_Based_Game.Classes
                         break;
                     case PathStepType.BossFight:
                         Boss currentBoss = new(Difficulty);
+                        currentBoss.Name = await currentBoss.RandomBossName();
                         await GameManagerRef.SimulateBossCombat(currentBoss);
                         if (i != PathSteps.Count - 1)
                         {
@@ -209,7 +211,7 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// 
         /// </summary>
-        public async Task ShowOptionsAfterInteractiveEvent()
+        public async UniTask ShowOptionsAfterInteractiveEvent()
         {
             //GameManager.HandleInputBuffering();
             Console.Write("Do you want to go back to (t)own, change your (e)quipment or (c)ontinue your adventure?: ");
@@ -235,7 +237,7 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// 
         /// </summary>
-        private async Task PathCompleted()
+        private async UniTask PathCompleted()
         {
             IsCompleted = true;
             float totalXpGained = XpOnCompletion + XpFromMobsOnPath;
@@ -277,7 +279,7 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// 
         /// </summary>
-        public async Task TeleportToTown(string enemyName = "")
+        public async UniTask TeleportToTown(string enemyName = "")
         {
             PlayerRef.Respawns = 3;
             if (!PlayerRef.IsDead)

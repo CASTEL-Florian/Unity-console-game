@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Text_Based_Game.Classes;
 using UnityEngine;
 using Console = UnityConsole.Console;
@@ -10,10 +10,7 @@ namespace Text_Based_Game
         private bool quitApplication;
         private void Start()
         {
-            Task.Run(Play).ContinueWith((t) =>
-            {
-                if (t.IsFaulted) Debug.LogError(t.Exception);
-            });
+            UniTask.Create(Play);
         }
 
         private void Update()
@@ -23,8 +20,8 @@ namespace Text_Based_Game
                 Application.Quit();
             }
         }
-
-        private async Task Play()
+        
+        private async UniTask Play()
         {
             // print the title
             await TextHelper.PrintTextFile(Globals.TitlePath, false);
@@ -63,9 +60,9 @@ namespace Text_Based_Game
             TextHelper.LineSpacing();
             // initialize GameManager
             GameManager gameManager = new();
+            await gameManager.LoadEnvironmentObservations();
             // start game
             await gameManager.StartGame();
         }
     }
-    
 }

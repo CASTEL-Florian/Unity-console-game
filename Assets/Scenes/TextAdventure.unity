@@ -490,8 +490,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   consoleText: {fileID: 2034124816}
-  bodyText: 
-  inputText: 
   defaultForegroundColor: {r: 0.8000001, g: 0.8000001, b: 0.8000001, a: 1}
 --- !u!1 &2034124814
 GameObject:

@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace UnityConsole
@@ -26,12 +27,12 @@ namespace UnityConsole
             UnityConsole.Instance.WriteLine();
         }
 
-        public static async Task<string> ReadLine()
+        public static async UniTask<string> ReadLine()
         {
             return await UnityConsole.Instance.ReadLine();
         }
 
-        public static async Task<KeyCode> ReadKey()
+        public static async UniTask<KeyCode> ReadKey()
         {
             return await UnityConsole.Instance.ReadKey();
         }
@@ -51,7 +52,7 @@ namespace UnityConsole
             UnityConsole.Instance.SetForegroundColor(color);
         }
 
-        public static async Task WaitUntil(Func<bool> condition, int frequency = 16)
+        public static async UniTask WaitUntil(Func<bool> condition, int frequency = 16)
         {
             await Task.Run(async () =>
             {
@@ -59,9 +60,9 @@ namespace UnityConsole
             });
         }
 
-        public static async Task Sleep(int milliseconds)
+        public static async UniTask Sleep(int milliseconds)
         {
-            await Task.Delay(milliseconds);
+            await UniTask.Delay(milliseconds);
         }
     }
 }

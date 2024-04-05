@@ -1,4 +1,7 @@
 using System.IO;
+using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
+using UnityConsole;
 using UnityEngine;
 using Random = System.Random;
 
@@ -11,7 +14,6 @@ namespace Text_Based_Game.Classes
         // CONSTRUCTORS
         public Boss(PathDifficulty difficulty) : base(difficulty)
         {
-            Name = RandomBossName();
             CurrentHp = (int)(CurrentHp * BossMultiplier);
             XpDropped *= BossMultiplier;
             MinDamage = (int)(MinDamage * BossMultiplier);
@@ -20,10 +22,10 @@ namespace Text_Based_Game.Classes
         public Boss(PathDifficulty difficulty, string name) : this(difficulty) { Name = name; }
 
         // METHODS
-        private string RandomBossName()
+        public async UniTask<string> RandomBossName()
         {
             Random random = new();
-            string[] allNames = File.ReadAllLines(Path.Combine(Application.streamingAssetsPath,Globals.BossNamePath));
+            string[] allNames = await FileLoader.ReadAllLinesAsync(Path.Combine(Application.streamingAssetsPath,Globals.BossNamePath));
             return allNames[random.Next(allNames.Length - 1)];
         }
     }

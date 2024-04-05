@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Random = System.Random;
 using Console = UnityConsole.Console;
@@ -47,17 +48,22 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// Start the first path
         /// </summary>
-        public async Task StartGame()
+        public async UniTask StartGame()
         {
             //Console.WriteLine("TESTING NewGameModifier: " + Globals.NewGameModifier);
             Globals.StartTime = DateTime.Now;
             await CurrentPath.TraversePath();
         }
 
+        public async UniTask LoadEnvironmentObservations()
+        {
+            await Player.LoadEnvironmentObservations();
+        }
+
         /// <summary>
         /// 
         /// </summary>
-        public async Task StartNewJourney()
+        public async UniTask StartNewJourney()
         {
             Globals.NewGameModifier++;
             Player.WeaponInventory.Clear();
@@ -73,7 +79,7 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// 
         /// </summary>
-        public async Task SimulateRegularCombat(Enemy enemy)
+        public async UniTask SimulateRegularCombat(Enemy enemy)
         {
             TextHelper.PrintTextInColor($"\nYou've encountered {enemy.Name}, {enemy.CurrentHp} HP", Color.yellow);
             await Console.Sleep(500);
@@ -137,7 +143,7 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// 
         /// </summary>
-        public async Task SimulateBossCombat(Boss boss)
+        public async UniTask SimulateBossCombat(Boss boss)
         {
             TextHelper.PrintTextInColor($"\nYou've encountered {boss.Name}, {boss.CurrentHp} HP", Color.red);
             await Console.Sleep(500);
@@ -230,7 +236,7 @@ namespace Text_Based_Game.Classes
         }
         
 
-        public async Task ChoosePath()
+        public async UniTask ChoosePath()
         {
             if (!CanTakeFinalPath)
             {
@@ -294,7 +300,7 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// 
         /// </summary>
-        public async Task ShowTownOptions()
+        public async UniTask ShowTownOptions()
         {
             Player.IsDead = false;
             if (Player.CurrentLocation != Location.Town)

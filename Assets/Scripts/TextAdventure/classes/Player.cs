@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
+using UnityConsole;
 using UnityEngine;
 using Random = System.Random;
 using Console = UnityConsole.Console;
@@ -25,7 +27,7 @@ namespace Text_Based_Game.Classes
         private const int StartingStrength = 5;
         public const string Name = "Alaric";
         private GameManager GameManagerRef { get; set; }
-        private readonly string[] EnvironmentObservations;
+        private string[] EnvironmentObservations;
         public Weapon EquippedWeapon = new(Rarity.Common, "Broken Sword Hilt");
         public List<Weapon> WeaponInventory = new List<Weapon>();
         public int CurrentLevel = 1;
@@ -57,7 +59,6 @@ namespace Text_Based_Game.Classes
             IsDead = false;
             CurrentLocation = Location.Town;
             GameManagerRef = gameManagerRef;
-            EnvironmentObservations = File.ReadAllLines(Path.Combine(Application.streamingAssetsPath, Globals.EnvironmentObservationsPath));
         }
 
         // METHODS
@@ -68,6 +69,11 @@ namespace Text_Based_Game.Classes
         public void PickUpWeapon(Weapon loot)
         {
             WeaponInventory.Add(loot);
+        }
+        
+        public async UniTask LoadEnvironmentObservations()
+        {
+            EnvironmentObservations = await FileLoader.ReadAllLinesAsync(Path.Combine(Application.streamingAssetsPath, Globals.EnvironmentObservationsPath));
         }
 
         /// <summary>
@@ -91,7 +97,7 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// 
         /// </summary>
-        public async Task ChangeEquipmentScreen()
+        public async UniTask ChangeEquipmentScreen()
         {
             if (WeaponInventory.Count == 0)
             {
@@ -213,7 +219,7 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// 
         /// </summary>
-        public async Task ShowStats()
+        public async UniTask ShowStats()
         {
             Console.WriteLine("\nYour Stats: ");
             Console.WriteLine($"Level: {CurrentLevel}");
@@ -459,7 +465,7 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// Gets a random sentence from an array and writes it to the console
         /// </summary>
-        public async Task SpeakAboutEnvironment()
+        public async UniTask SpeakAboutEnvironment()
         {
             string randomSentence = EnvironmentObservations[Random.Next(EnvironmentObservations.Length)];
             await TextHelper.PrintStringCharByChar(randomSentence, Color.white);
