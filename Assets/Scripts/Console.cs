@@ -56,7 +56,7 @@ namespace UnityConsole
         {
             await Task.Run(async () =>
             {
-                while (!condition()) await Task.Delay(frequency);
+                while (!condition()) await UniTask.Delay(frequency);
             });
         }
 
