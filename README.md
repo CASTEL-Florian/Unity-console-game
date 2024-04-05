@@ -25,7 +25,7 @@ Original game by Mekkmann : https://mekkmann.itch.io/alarics-adventure-text-base
 
 <br><br>
 
-
+# How to port your console game to Unity
 The main steps to consider when converting a console game to a Unity game are the following:
 - Replace `Thread.Sleep(time)` with `Console.Sleep(time)`
 <br>
@@ -93,7 +93,41 @@ public class Program : MonoBehaviour
 <br>
 
 - Replace the colors in the game with Unity colors.
-
 <br>
+
+# WebGL support
+The framework support WebGL using [UniTask](https://github.com/Cysharp/UniTask) instead of Task for async method.
+A FileLoader class provides the following methods to load from a file. These methods are also compatible with non-WebGL builds.
+```C#
+public static async UniTask<string[]> ReadAllLinesAsync(string path);
+public static async UniTask<string> ReadAllTextAsync(string path);
+public static async UniTask<byte[]> ReadAllBytesAsync(string path);
+```
+
+These methods need to be executed in asynchronous code. For example, you may nee to move the calls async methods out of the costructors:
+```C#
+private void CreateEnemy(string namePath){
+    Enemy enemy = new Enemy(namePath);
+}
+public Enemy()
+{
+    Name = await FileLoader.ReadAllLinesAsync(string path); // Compilation error
+}
+```
+Replace the code above with
+```C#
+private async UniTask CreateEnemy(string namePath){
+    Enemy enemy = new Enemy(namePath);
+    await enemy.LoadNameFromFile(namePath)
+}
+public Enemy()
+{
+}
+
+// In the Enemy class
+public async UniTask LoadNameFromFile(path){
+  Name = await FileLoader.ReadAllLinesAsync(string path);
+}
+```
 
 - Put the resources of the project in a folder such as Resources or StreamingAssets and change the paths in the code accordingly.
