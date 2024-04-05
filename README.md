@@ -100,7 +100,9 @@ public class Program : MonoBehaviour
 
 # WebGL support
 The carriage return character produces weird results in WebGL TextMeshPro. The character is therefore automatically removed from texts before printing in the console.
+
 The framework support WebGL using [UniTask](https://github.com/Cysharp/UniTask) instead of Task for async method.
+
 A FileLoader class provides the following methods to load from a file. These methods are also compatible with non-WebGL builds.
 ```C#
 public static async UniTask<string[]> ReadAllLinesAsync(string path);
