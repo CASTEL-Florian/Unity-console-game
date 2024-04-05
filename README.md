@@ -34,6 +34,9 @@ The main steps to consider when converting a console game to a Unity game are th
 `string input = Console.ReadLine();` with `string input = await Console.ReadLine();`
 <br>
 - Turn every function that call a read function on the Console into an async function.
+
+**In the following code, I use UniTask instead of Task for the WebGL support. See the WebGL support section for more information**
+  
 For example:
 
 ```C#
@@ -47,11 +50,11 @@ private void F2(){
 ```
 Replace the code above with:
 ```C#
-private async Task F1(){
+private async UniTask F1(){
   await F2();
 }
 
-private async Task F2(){
+private async UniTask F2(){
   string input = await Console.ReadLine();
 }
 ```
@@ -77,7 +80,7 @@ public class Program : MonoBehaviour
 {
     private void Start()
     {
-        Task.Run(Play).ContinueWith((t) =>
+        UniTask.Run(Play).ContinueWith((t) =>
         {
             if (t.IsFaulted) Debug.LogError(t.Exception);
         });
@@ -96,6 +99,7 @@ public class Program : MonoBehaviour
 <br>
 
 # WebGL support
+The carriage return character produces weird results in WebGL TextMeshPro. The character is therefore automatically removed from texts before printing in the console.
 The framework support WebGL using [UniTask](https://github.com/Cysharp/UniTask) instead of Task for async method.
 A FileLoader class provides the following methods to load from a file. These methods are also compatible with non-WebGL builds.
 ```C#
