@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -54,7 +53,7 @@ namespace UnityConsole
 
         public static async UniTask WaitUntil(Func<bool> condition, int frequency = 16)
         {
-            await Task.Run(async () =>
+            await UniTask.Create(async () =>
             {
                 while (!condition()) await UniTask.Delay(frequency);
             });
