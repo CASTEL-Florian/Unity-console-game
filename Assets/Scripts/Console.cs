@@ -18,6 +18,12 @@ namespace UnityConsole
             set => UnityConsole.Instance.BackgroundColor = value;
         }
         
+        public static bool CursorVisible
+        {
+            get => UnityConsole.Instance.CursorVisible;
+            set => UnityConsole.Instance.CursorVisible = value;
+        }
+        
         public static void Write(string value)
         {
             UnityConsole.Instance.Write(value);

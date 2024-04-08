@@ -12,6 +12,8 @@ namespace UnityConsole
         [SerializeField] private TextMeshProUGUI consoleText;
         [SerializeField] private Color defaultForegroundColor;
         
+        private RectTransform consoleRectTransform;
+        
         private string backgroundText;
         private string bodyText;
         private string inputText;
@@ -30,6 +32,9 @@ namespace UnityConsole
         private readonly string invisibleCursor = "<alpha=#00>|";
         bool isBlinkCursorActive;
         private Coroutine blinkCursorCoroutine;
+        
+        private const float characterSpacing = 0.2f;
+        private int Width => (int)(consoleRectTransform.rect.width / characterSpacing);
 
 
         public Color ForegroundColor
@@ -53,6 +58,17 @@ namespace UnityConsole
             }
         }
 
+        private bool cursorVisible = true;
+        public bool CursorVisible
+        {
+            get => cursorVisible;
+            set
+            {
+                cursorVisible = value;
+                cursor = cursorVisible ? visibleCursor : invisibleCursor;
+            }
+        }
+
 
         public static UnityConsole Instance { get; private set; }
 
@@ -61,8 +77,8 @@ namespace UnityConsole
             if (Instance == null)
             {
                 Instance = this;
-                bodyText = "<mspace=0.2>";
-                backgroundText = "<mspace=0.2>";
+                bodyText = $"<mspace={characterSpacing}>";
+                backgroundText = $"<mspace={characterSpacing}>";
                 BackgroundColor = Color.clear;
                 ForegroundColor = defaultForegroundColor;
             }
@@ -74,6 +90,7 @@ namespace UnityConsole
 
         private void Start()
         {
+            consoleRectTransform = consoleText.GetComponent<RectTransform>();
             StartCoroutine(BlinkCursor());
         }
 
@@ -199,7 +216,10 @@ namespace UnityConsole
             isBlinkCursorActive = true;
             await Console.WaitUntil(() => !isGettingLine);
             isBlinkCursorActive = false;
-            cursor = visibleCursor;
+            if (cursorVisible)
+            {
+                cursor = visibleCursor;
+            }
             string result = inputText;
             inputText = "";
             return result;
@@ -217,7 +237,10 @@ namespace UnityConsole
                 Write(keyCode.ToString());
             }
 
-            cursor = visibleCursor;
+            if (cursorVisible)
+            {
+                cursor = visibleCursor;
+            }
             return keyCode;
 
         }
@@ -241,9 +264,14 @@ namespace UnityConsole
             while (true)
             {
                 yield return new WaitForSeconds(0.5f);
+                if (!cursorVisible)
+                {
+                    continue;
+                }
                 if (!isBlinkCursorActive)
                 {
                     cursor = visibleCursor;
+                    needsUpdate = true;
                     continue;
                 }
 
