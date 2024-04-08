@@ -38,7 +38,7 @@ namespace UnityConsole
             set
             {
                 currentForegroundColor = value;
-                bodyText += $"<color=#{ColorUtility.ToHtmlStringRGB(currentForegroundColor)}>";
+                bodyText += $"<color=#{ColorUtility.ToHtmlStringRGBA(currentForegroundColor)}>";
             }
         }
         
@@ -49,7 +49,7 @@ namespace UnityConsole
             {
                 currentBackgroundColor = value;
                 backgroundText += $"<mark=#{ColorUtility.ToHtmlStringRGBA(currentBackgroundColor)}>";
-                backgroundText += $"<color=#{ColorUtility.ToHtmlStringRGB(currentBackgroundColor)}>";
+                backgroundText += $"<color=#{ColorUtility.ToHtmlStringRGBA(currentBackgroundColor)}>";
             }
         }
 
