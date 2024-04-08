@@ -6,6 +6,18 @@ namespace UnityConsole
 {
     public static class Console
     {
+        public static Color ForegroundColor
+        {
+            get => UnityConsole.Instance.ForegroundColor;
+            set => UnityConsole.Instance.ForegroundColor = value;
+        }
+        
+        public static Color BackgroundColor
+        {
+            get => UnityConsole.Instance.BackgroundColor;
+            set => UnityConsole.Instance.BackgroundColor = value;
+        }
+        
         public static void Write(string value)
         {
             UnityConsole.Instance.Write(value);
@@ -45,12 +57,7 @@ namespace UnityConsole
         {
             UnityConsole.Instance.ResetColor();
         }
-
-        public static void SetForegroundColor(Color color)
-        {
-            UnityConsole.Instance.SetForegroundColor(color);
-        }
-
+        
         public static async UniTask WaitUntil(Func<bool> condition, int frequency = 16)
         {
             await UniTask.Create(async () =>

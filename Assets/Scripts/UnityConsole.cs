@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Text.RegularExpressions;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using TMPro;
@@ -7,12 +8,16 @@ namespace UnityConsole
 {
     public class UnityConsole : MonoBehaviour
     {
+        [SerializeField] private TextMeshProUGUI consoleBackground;
         [SerializeField] private TextMeshProUGUI consoleText;
         [SerializeField] private Color defaultForegroundColor;
+        
+        private string backgroundText;
         private string bodyText;
         private string inputText;
 
         private Color currentForegroundColor;
+        private Color currentBackgroundColor;
 
         private bool isGettingKey;
         private bool isGettingLine;
@@ -27,6 +32,28 @@ namespace UnityConsole
         private Coroutine blinkCursorCoroutine;
 
 
+        public Color ForegroundColor
+        {
+            get => currentForegroundColor;
+            set
+            {
+                currentForegroundColor = value;
+                bodyText += $"<color=#{ColorUtility.ToHtmlStringRGB(currentForegroundColor)}>";
+            }
+        }
+        
+        public Color BackgroundColor
+        {
+            get => currentBackgroundColor;
+            set
+            {
+                currentBackgroundColor = value;
+                backgroundText += $"<mark=#{ColorUtility.ToHtmlStringRGBA(currentBackgroundColor)}>";
+                backgroundText += $"<color=#{ColorUtility.ToHtmlStringRGB(currentBackgroundColor)}>";
+            }
+        }
+
+
         public static UnityConsole Instance { get; private set; }
 
         private void Awake()
@@ -35,7 +62,9 @@ namespace UnityConsole
             {
                 Instance = this;
                 bodyText = "<mspace=0.2>";
-                SetForegroundColor(defaultForegroundColor);
+                backgroundText = "<mspace=0.2>";
+                BackgroundColor = Color.clear;
+                ForegroundColor = defaultForegroundColor;
             }
             else
             {
@@ -111,7 +140,20 @@ namespace UnityConsole
 
         public void Write(string value)
         {
-            bodyText += value.Replace("\n", "<br>");
+            string text = value.Replace("\n", "<br>").Replace("\r", "");
+            bodyText += text;
+
+            
+            
+            char[] chars = value.ToCharArray();
+            for (int i = 0; i < chars.Length; i++)
+            {
+                if (chars[i] != ' ' && chars[i] != '\n')
+                {
+                    chars[i] = '_';
+                }
+            }
+            backgroundText += new string(chars);;
             needsUpdate = true;
         }
 
@@ -124,23 +166,31 @@ namespace UnityConsole
             if (value == '\n')
             {
                 bodyText += "<br>";
+                backgroundText += "<br>";
             }
             else
             {
                 bodyText += value;
+                if (value == ' ')
+                {
+                    backgroundText += " ";
+                }
+                else
+                {
+                    backgroundText += "_";
+                }
             }
             needsUpdate = true;
         }
 
         public void WriteLine(string value)
         {
-            Write(value + "<br>");
+            Write(value + "\n");
         }
 
         public void WriteLine()
         {
-            bodyText += "<br>";
-            needsUpdate = true;
+            Write('\n');
         }
 
         public async UniTask<string> ReadLine()
@@ -181,15 +231,10 @@ namespace UnityConsole
 
         public void ResetColor()
         {
-            currentForegroundColor = defaultForegroundColor;
+            ForegroundColor = defaultForegroundColor;
+            BackgroundColor = Color.clear;
         }
-
-
-        public void SetForegroundColor(Color color)
-        {
-            currentForegroundColor = color;
-            bodyText += $"<color=#{ColorUtility.ToHtmlStringRGB(currentForegroundColor)}>";
-        }
+        
 
         private IEnumerator BlinkCursor()
         {
@@ -210,6 +255,7 @@ namespace UnityConsole
         private void UpdateConsoleText()
         {
             consoleText.text = bodyText + inputText + cursor;
+            consoleBackground.text = backgroundText;
         }
     }
 }

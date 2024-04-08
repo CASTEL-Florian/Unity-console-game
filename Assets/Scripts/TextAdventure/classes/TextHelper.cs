@@ -140,7 +140,7 @@ namespace Text_Based_Game.Classes
         /// </summary>
         public static void ChangeForegroundColor(Color color)
         {
-            Console.SetForegroundColor(color);
+            Console.ForegroundColor = color;
         }
 
         /// <summary>
