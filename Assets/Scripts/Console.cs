@@ -24,6 +24,8 @@ namespace UnityConsole
             set => UnityConsole.Instance.CursorVisible = value;
         }
         
+        public static int WindowWidth => UnityConsole.Instance.WindowWidth;
+        
         public static void Write(string value)
         {
             UnityConsole.Instance.Write(value);

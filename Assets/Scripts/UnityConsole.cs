@@ -34,7 +34,7 @@ namespace UnityConsole
         private Coroutine blinkCursorCoroutine;
         
         private const float characterSpacing = 0.2f;
-        private int Width => (int)(consoleRectTransform.rect.width / characterSpacing);
+        public int WindowWidth => (int)(consoleRectTransform.rect.width / characterSpacing);
 
 
         public Color ForegroundColor
