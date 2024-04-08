@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Text.RegularExpressions;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using TMPro;
@@ -11,8 +10,14 @@ namespace UnityConsole
         [SerializeField] private TextMeshProUGUI consoleBackground;
         [SerializeField] private TextMeshProUGUI consoleText;
         [SerializeField] private Color defaultForegroundColor;
+        [SerializeField] private int defaultWindowWidth = 93;
+        [SerializeField] private int defaultWindowHeight = 27;
+        [SerializeField] private float borderSize = 0.5f;
+        [SerializeField] private ConsoleCamera consoleCamera;
+        [SerializeField] private bool centerContentX = false;
+        [SerializeField] private bool centerContentY = false;
         
-        private RectTransform consoleRectTransform;
+        [SerializeField] private RectTransform consoleRectTransform;
         
         private string backgroundText;
         private string bodyText;
@@ -33,8 +38,37 @@ namespace UnityConsole
         bool isBlinkCursorActive;
         private Coroutine blinkCursorCoroutine;
         
-        private const float characterSpacing = 0.2f;
-        public int WindowWidth => (int)(consoleRectTransform.rect.width / characterSpacing);
+        private const float CharacterSpacing = 0.2f;
+        private float characterHeight;
+
+        public int WindowWidth
+        {
+            get => Mathf.RoundToInt(consoleRectTransform.sizeDelta.x / CharacterSpacing);
+            set
+            {
+                if (WindowWidth == value)
+                {
+                    return;
+                }
+                consoleRectTransform.sizeDelta =
+                    new Vector2(value * CharacterSpacing, consoleRectTransform.sizeDelta.y);
+                UpdateCamera();
+            }
+        }
+
+        public int WindowHeight
+        {
+            get => Mathf.RoundToInt(consoleCamera.ConsoleBottom / characterHeight);
+            set
+            {
+                if (WindowHeight == value)
+                {
+                    return;
+                }
+                consoleCamera.ConsoleBottom = value * characterHeight;
+                UpdateCamera();
+            }
+        }
 
 
         public Color ForegroundColor
@@ -57,6 +91,36 @@ namespace UnityConsole
                 backgroundText += $"<color=#{ColorUtility.ToHtmlStringRGBA(currentBackgroundColor)}>";
             }
         }
+        
+        public bool CenterContentX
+        {
+            get => centerContentX;
+            set
+            {
+                centerContentX = value;
+                UpdateCamera();
+            }
+        }
+        
+        public bool CenterContentY
+        {
+            get => centerContentY;
+            set
+            {
+                centerContentY = value;
+                UpdateCamera();
+            }
+        }
+        
+        public float BorderSize
+        {
+            get => borderSize;
+            set
+            {
+                borderSize = value;
+                UpdateCamera();
+            }
+        }
 
         private bool cursorVisible = true;
         public bool CursorVisible
@@ -77,8 +141,14 @@ namespace UnityConsole
             if (Instance == null)
             {
                 Instance = this;
-                bodyText = $"<mspace={characterSpacing}>";
-                backgroundText = $"<mspace={characterSpacing}>";
+                
+                // Initialize in Awake to ensure that the console is ready to use in Start
+                consoleText.text = "A";
+                consoleText.ForceMeshUpdate();
+                characterHeight = consoleText.GetRenderedValues().y;
+                consoleText.text = "";
+                bodyText = $"<mspace={CharacterSpacing}>";
+                backgroundText = $"<mspace={CharacterSpacing}>";
                 BackgroundColor = Color.clear;
                 ForegroundColor = defaultForegroundColor;
             }
@@ -90,7 +160,9 @@ namespace UnityConsole
 
         private void Start()
         {
-            consoleRectTransform = consoleText.GetComponent<RectTransform>();
+            WindowWidth = defaultWindowWidth;
+            WindowHeight = defaultWindowHeight;
+            
             StartCoroutine(BlinkCursor());
         }
 
@@ -284,6 +356,44 @@ namespace UnityConsole
         {
             consoleText.text = bodyText + inputText + cursor;
             consoleBackground.text = backgroundText;
+        }
+
+        private void UpdateCamera()
+        {
+            float cameraSize;
+            if (WindowHeight * characterHeight * consoleCamera.AspectRatio > WindowWidth * CharacterSpacing + 2 * borderSize) // Height is the limiting factor
+            {
+                cameraSize = WindowHeight * characterHeight / 2;
+            }
+            else // Width is the limiting factor
+            {
+                cameraSize = (WindowWidth * CharacterSpacing + 2 * borderSize) / consoleCamera.AspectRatio / 2;
+            }
+            consoleCamera.SetCameraSize(cameraSize);
+
+            if (centerContentX)
+            {
+                consoleRectTransform.position = new Vector3(0, 0, 0);
+            }
+            else
+            {
+                consoleRectTransform.position =
+                    new Vector3(
+                        borderSize - consoleCamera.AspectRatio * cameraSize + consoleRectTransform.sizeDelta.x / 2,
+                        0, 0);
+            }
+            
+            if (centerContentY)
+            {
+                consoleRectTransform.position = new Vector3(consoleRectTransform.position.x, WindowHeight * characterHeight / 2, 0);
+            }
+            else
+            {
+                consoleRectTransform.position =
+                    new Vector3(
+                        consoleRectTransform.position.x,
+                        cameraSize, 0);
+            }
         }
     }
 }

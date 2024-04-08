@@ -23,8 +23,36 @@ namespace UnityConsole
             get => UnityConsole.Instance.CursorVisible;
             set => UnityConsole.Instance.CursorVisible = value;
         }
+
+        public static int WindowWidth
+        {
+            get => UnityConsole.Instance.WindowWidth;
+            set => UnityConsole.Instance.WindowWidth = value;
+        }
+
+        public static int WindowHeight
+        {
+            get => UnityConsole.Instance.WindowHeight;
+            set => UnityConsole.Instance.WindowHeight = value;
+        }
         
-        public static int WindowWidth => UnityConsole.Instance.WindowWidth;
+        public static bool CenterContentX
+        {
+            get => UnityConsole.Instance.CenterContentX;
+            set => UnityConsole.Instance.CenterContentX = value;
+        }
+        
+        public static bool CenterContentY
+        {
+            get => UnityConsole.Instance.CenterContentY;
+            set => UnityConsole.Instance.CenterContentY = value;
+        }
+        
+        public static float BorderSize
+        {
+            get => UnityConsole.Instance.BorderSize;
+            set => UnityConsole.Instance.BorderSize = value;
+        }
         
         public static void Write(string value)
         {
