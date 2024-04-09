@@ -2,6 +2,7 @@ using System.Collections;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using TMPro;
+using UnityEngine.Serialization;
 
 namespace UnityConsole
 {
@@ -16,6 +17,9 @@ namespace UnityConsole
         [SerializeField] private ConsoleCamera consoleCamera;
         [SerializeField] private bool centerContentX = false;
         [SerializeField] private bool centerContentY = false;
+        [SerializeField] private Vector2Int defaultWindowSize = new Vector2Int(960, 540);
+        [SerializeField] bool fixedAspectRatio = true;
+        [FormerlySerializedAs("isKeyBufferActive")] [SerializeField] bool isInputBufferActive = false;
         
         [SerializeField] private RectTransform consoleRectTransform;
         
@@ -40,6 +44,10 @@ namespace UnityConsole
         
         private const float CharacterSpacing = 0.2f;
         private float characterHeight;
+        
+        private float pixelsPerUnit;
+        
+        private readonly Queue inputBuffer = new Queue();
 
         public int WindowWidth
         {
@@ -132,6 +140,18 @@ namespace UnityConsole
                 cursor = cursorVisible ? visibleCursor : invisibleCursor;
             }
         }
+        
+        public bool KeyAvailable => inputBuffer.Count > 0;
+        
+        public bool InputBufferActive
+        {
+            get => isInputBufferActive;
+            set
+            {
+                isInputBufferActive = value;
+                inputBuffer.Clear();
+            }
+        }
 
 
         public static UnityConsole Instance { get; private set; }
@@ -160,6 +180,11 @@ namespace UnityConsole
 
         private void Start()
         {
+            pixelsPerUnit = defaultWindowSize.y / (2 * consoleCamera.Size);
+
+            Screen.SetResolution(defaultWindowSize.x, defaultWindowSize.y, FullScreenMode.Windowed);
+            consoleCamera.AspectRatio = (float)defaultWindowSize.x / defaultWindowSize.y;
+        
             WindowWidth = defaultWindowWidth;
             WindowHeight = defaultWindowHeight;
             
@@ -173,24 +198,38 @@ namespace UnityConsole
                 UpdateConsoleText();
                 needsUpdate = false;
             }
-
+            
+            if (isInputBufferActive && Input.anyKeyDown)
+            {
+                if (Input.inputString.Length > 0)
+                {
+                    inputBuffer.Enqueue(Input.inputString);
+                }
+            }
+            
             if (!isGettingKey && !isGettingLine)
             {
                 return;
             }
 
-            if (isGettingKey && Input.anyKeyDown)
+            
+            if (isGettingKey)
             {
-                isGettingKey = false;
-                keyCode = Input.inputString.Length >= 1 ? (KeyCode)Input.inputString[0] : KeyCode.None;
-                return;
-            }
+                if (inputBuffer.Count > 0)
+                {
+                    keyCode = (KeyCode)((string)inputBuffer.Dequeue())[0];
+                    isGettingKey = false;
+                    return;
+                }
 
-            if (Input.GetKeyDown(KeyCode.Return))
-            {
-                ProcessCommand(inputText);
+                if (!Input.anyKeyDown) return;
+                keyCode = Input.inputString.Length >= 1 ? (KeyCode)Input.inputString[0] : KeyCode.None;
+                if (keyCode != KeyCode.None)
+                {
+                    isGettingKey = false;
+                }
             }
-            else if (Input.anyKeyDown)
+            else
             {
                 HandleInput();
             }
@@ -198,7 +237,16 @@ namespace UnityConsole
 
         private void HandleInput()
         {
-            foreach (char c in Input.inputString)
+            string input;
+            if (inputBuffer.Count > 0)
+            {
+                input = (string)inputBuffer.Dequeue();
+            }
+            else
+            {
+                input = Input.inputString;
+            }
+            foreach (char c in input)
             {
                 if (c == '\b')
                 {
@@ -297,16 +345,19 @@ namespace UnityConsole
             return result;
         }
 
-        public async UniTask<KeyCode> ReadKey()
+        public async UniTask<KeyCode> ReadKey(bool intercept = false)
         {
             isGettingKey = true;
             isBlinkCursorActive = true;
             await Console.WaitUntil(() => !isGettingKey);
             isBlinkCursorActive = false;
 
-            if ((int)KeyCode.A <= (int)keyCode && (int)keyCode <= (int)KeyCode.Z)
+            if ((int)KeyCode.A <= (int)keyCode && (int)keyCode <= (int)KeyCode.Z) // If the key is a letter.
             {
-                Write(keyCode.ToString());
+                if (!intercept)
+                {
+                    Write(keyCode.ToString());
+                }
             }
 
             if (cursorVisible)
@@ -360,6 +411,16 @@ namespace UnityConsole
 
         private void UpdateCamera()
         {
+            if (WindowHeight < 1 || WindowWidth < 1)
+            {
+                return;
+            }
+            if (!fixedAspectRatio)
+            {
+                Screen.SetResolution((int)((WindowWidth * CharacterSpacing + 2 * borderSize) * pixelsPerUnit),
+                    (int)(WindowHeight * characterHeight * pixelsPerUnit), FullScreenMode.Windowed);
+                consoleCamera.AspectRatio = (WindowWidth * CharacterSpacing + 2 * borderSize) / (WindowHeight * characterHeight);
+            }
             float cameraSize;
             if (WindowHeight * characterHeight * consoleCamera.AspectRatio > WindowWidth * CharacterSpacing + 2 * borderSize) // Height is the limiting factor
             {

@@ -9,7 +9,12 @@ namespace UnityConsole
         [SerializeField] private Transform textMask;
 
         private Camera cam;        
-        public float AspectRatio => cam.aspect;
+        public float AspectRatio
+        {
+            get => cam.aspect;
+            set => cam.aspect = value;
+        }
+
         public float ConsoleBottom { get; set; }
         
         public float Size => cam.orthographicSize;

@@ -582,11 +582,12 @@ MonoBehaviour:
   defaultWindowHeight: 27
   borderSize: 0.5
   consoleCamera: {fileID: 519420033}
-  fixedRatio: 0
   centerContentX: 0
   centerContentY: 0
+  defaultWindowSize: {x: 960, y: 540}
+  fixedAspectRatio: 1
+  isInputBufferActive: 0
   consoleRectTransform: {fileID: 1119556340}
-  unitInPixels: 54
 --- !u!1 &1722399779
 GameObject:
   m_ObjectHideFlags: 0

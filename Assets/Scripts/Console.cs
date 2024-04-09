@@ -54,6 +54,12 @@ namespace UnityConsole
             set => UnityConsole.Instance.BorderSize = value;
         }
         
+        public static bool InputBufferActive
+        {
+            get => UnityConsole.Instance.InputBufferActive;
+            set => UnityConsole.Instance.InputBufferActive = value;
+        }
+        
         public static void Write(string value)
         {
             UnityConsole.Instance.Write(value);
