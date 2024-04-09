@@ -587,6 +587,7 @@ MonoBehaviour:
   defaultWindowSize: {x: 960, y: 540}
   fixedAspectRatio: 1
   isInputBufferActive: 0
+  isWordWrappingEnabled: 1
   consoleRectTransform: {fileID: 1119556340}
 --- !u!1 &1722399779
 GameObject:

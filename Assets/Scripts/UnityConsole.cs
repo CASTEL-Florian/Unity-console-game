@@ -2,7 +2,6 @@ using System.Collections;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using TMPro;
-using UnityEngine.Serialization;
 
 namespace UnityConsole
 {
@@ -19,7 +18,8 @@ namespace UnityConsole
         [SerializeField] private bool centerContentY = false;
         [SerializeField] private Vector2Int defaultWindowSize = new Vector2Int(960, 540);
         [SerializeField] bool fixedAspectRatio = true;
-        [FormerlySerializedAs("isKeyBufferActive")] [SerializeField] bool isInputBufferActive = false;
+        [SerializeField] bool isInputBufferActive = false;
+        [SerializeField] bool isWordWrappingEnabled = false;
         
         [SerializeField] private RectTransform consoleRectTransform;
         
@@ -48,6 +48,8 @@ namespace UnityConsole
         private float pixelsPerUnit;
         
         private readonly Queue inputBuffer = new Queue();
+        
+        private readonly string zws = char.ConvertFromUtf32(0x200B);
 
         public int WindowWidth
         {
@@ -95,8 +97,8 @@ namespace UnityConsole
             set
             {
                 currentBackgroundColor = value;
-                backgroundText += $"<mark=#{ColorUtility.ToHtmlStringRGBA(currentBackgroundColor)}>";
                 backgroundText += $"<color=#{ColorUtility.ToHtmlStringRGBA(currentBackgroundColor)}>";
+                backgroundText += $"<mark=#{ColorUtility.ToHtmlStringRGBA(currentBackgroundColor)}>";
             }
         }
         
@@ -141,7 +143,7 @@ namespace UnityConsole
             }
         }
         
-        public bool KeyAvailable => inputBuffer.Count > 0;
+        public bool KeyAvailable => inputBuffer.Count > 0 && isInputBufferActive || Input.anyKeyDown && !isInputBufferActive; 
         
         public bool InputBufferActive
         {
@@ -152,7 +154,7 @@ namespace UnityConsole
                 inputBuffer.Clear();
             }
         }
-
+        
 
         public static UnityConsole Instance { get; private set; }
 
@@ -182,8 +184,11 @@ namespace UnityConsole
         {
             pixelsPerUnit = defaultWindowSize.y / (2 * consoleCamera.Size);
 
-            Screen.SetResolution(defaultWindowSize.x, defaultWindowSize.y, FullScreenMode.Windowed);
-            consoleCamera.AspectRatio = (float)defaultWindowSize.x / defaultWindowSize.y;
+            if (!fixedAspectRatio)
+            {
+                Screen.SetResolution(defaultWindowSize.x, defaultWindowSize.y, FullScreenMode.Windowed);
+                consoleCamera.AspectRatio = (float)defaultWindowSize.x / defaultWindowSize.y;
+            }
         
             WindowWidth = defaultWindowWidth;
             WindowHeight = defaultWindowHeight;
@@ -277,15 +282,18 @@ namespace UnityConsole
 
         public void Write(string value)
         {
-            string text = value.Replace("\n", "<br>").Replace("\r", "");
-            bodyText += text;
+            string text = value.Replace("\r", "");
+            if (!isWordWrappingEnabled)
+            {
+                text = string.Join(zws, text.ToCharArray()) + zws;
+            }
+            bodyText += text.Replace("\n", "<br>");
 
-            
             
             char[] chars = value.ToCharArray();
             for (int i = 0; i < chars.Length; i++)
             {
-                if (chars[i] != ' ' && chars[i] != '\n')
+                if ((chars[i] != ' ' || !isWordWrappingEnabled) && chars[i] != '\n')
                 {
                     chars[i] = '_';
                 }
@@ -307,8 +315,8 @@ namespace UnityConsole
             }
             else
             {
-                bodyText += value;
-                if (value == ' ')
+                bodyText += value + (isWordWrappingEnabled ? "" : zws);
+                if (value == ' ' && isWordWrappingEnabled)
                 {
                     backgroundText += " ";
                 }
