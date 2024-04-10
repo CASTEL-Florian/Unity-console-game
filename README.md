@@ -5,7 +5,7 @@
 <br><br>
 
 This project shows an example porting a C# console game into a Unity project.
-The current implementation of the console supports the following methods:
+The current implementation of the console supports the following methods and properties:
 ```C#
 Console.Write(string value);
 Console.Write(char value);
@@ -15,7 +15,8 @@ Console.ReadLine();
 Console.ReadKey();
 Console.Clear();
 Console.ResetColor();
-Console.SetForegroundColor(Color color);
+Console.ForegroundColor {get; set; }
+Console.BackgroundColor {get; set; }
 ```
 Console.BackgroundColor is not supported.
 
@@ -80,10 +81,7 @@ public class Program : MonoBehaviour
 {
     private void Start()
     {
-        UniTask.Run(Play).ContinueWith((t) =>
-        {
-            if (t.IsFaulted) Debug.LogError(t.Exception);
-        });
+        UniTask.Create(Play);
     }
 
     private async Task Play()
