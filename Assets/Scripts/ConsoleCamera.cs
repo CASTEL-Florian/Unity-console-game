@@ -8,7 +8,7 @@ namespace UnityConsole
         [SerializeField] private TextMeshProUGUI consoleText;
         [SerializeField] private Transform textMask;
 
-        private Camera cam;        
+        [SerializeField] private Camera cam;        
         public float AspectRatio
         {
             get => cam.aspect;
@@ -23,11 +23,6 @@ namespace UnityConsole
         {
             cam.orthographicSize = size;
             textMask.localScale = new Vector3(2 * cam.aspect * size, size, 1f);
-        }
-
-        private void Start()
-        {
-            cam = Camera.main;
         }
 
         private void Update()

@@ -5,6 +5,12 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
+  - enabled: 0
+    path: Assets/Scenes/FPS.unity
+    guid: 106e6d9ff34bdc943a0c8de7c01c4677
+  - enabled: 0
+    path: Assets/Scenes/Shmup.unity
+    guid: d0a63be3fe67c794fa2dc8ded6644634
   - enabled: 1
     path: Assets/Scenes/TextAdventure.unity
     guid: 2cda990e2423bbf4892e6590ba056729

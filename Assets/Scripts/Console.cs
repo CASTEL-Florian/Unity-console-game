@@ -60,6 +60,12 @@ namespace UnityConsole
             set => UnityConsole.Instance.InputBufferActive = value;
         }
         
+        public static float PixelsPerUnit
+        {
+            get => UnityConsole.Instance.PixelsPerUnit;
+            set => UnityConsole.Instance.PixelsPerUnit = value;
+        }
+        
         public static void Write(string value)
         {
             UnityConsole.Instance.Write(value);
@@ -84,11 +90,18 @@ namespace UnityConsole
         {
             return await UnityConsole.Instance.ReadLine();
         }
-
-        public static async UniTask<KeyCode> ReadKey()
+        
+        public static async UniTask<KeyCode> ReadKey(bool intercept = false)
         {
-            return await UnityConsole.Instance.ReadKey();
+            return await UnityConsole.Instance.ReadKey(intercept);
         }
+        
+        public static bool GetKeyState(KeyCode key)
+        {
+            return Input.GetKey(key);
+        }
+        
+        public static bool KeyAvailable => UnityConsole.Instance.KeyAvailable;
 
         public static void Clear()
         {
