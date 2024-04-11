@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Text;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using TMPro;
@@ -316,27 +317,7 @@ namespace UnityConsole
 
         public void Write(char value)
         {
-            if (value == '\r')
-            {
-                return;
-            } 
-            if (value == '\n')
-            {
-                bodyText += "<br>";
-                backgroundText += "<br>";
-            }
-            else
-            {
-                if (value == ' ')
-                {
-                    backgroundText += " ";
-                }
-                else
-                {
-                    backgroundText += "_";
-                }
-            }
-            needsUpdate = true;
+            Write(value.ToString());
         }
 
         public void WriteLine(string value)
@@ -349,11 +330,11 @@ namespace UnityConsole
             Write('\n');
         }
 
-        public async UniTask<string> ReadLine()
+        public async UniTask<string> ReadLine(CancellationToken cancellationToken = default)
         {
             isGettingLine = true;
             isBlinkCursorActive = true;
-            await Console.WaitUntil(() => !isGettingLine);
+            await Console.WaitUntil(() => !isGettingLine, cancellationToken:cancellationToken);
             isBlinkCursorActive = false;
             if (cursorVisible)
             {
@@ -364,11 +345,11 @@ namespace UnityConsole
             return result;
         }
 
-        public async UniTask<KeyCode> ReadKey(bool intercept = false)
+        public async UniTask<KeyCode> ReadKey(bool intercept = false, CancellationToken cancellationToken = default)
         {
             isGettingKey = true;
             isBlinkCursorActive = true;
-            await Console.WaitUntil(() => !isGettingKey);
+            await Console.WaitUntil(() => !isGettingKey, cancellationToken:cancellationToken);
             isBlinkCursorActive = false;
 
             if ((int)KeyCode.A <= (int)keyCode && (int)keyCode <= (int)KeyCode.Z) // If the key is a letter.
@@ -402,9 +383,9 @@ namespace UnityConsole
             BackgroundColor = Color.clear;
         }
 
-        public async UniTask Beep(int frequency = 800, int duration = 200)
+        public async UniTask Beep(int frequency = 800, int duration = 200, CancellationToken cancellationToken = default)
         {
-            await beepPlayer.Beep(frequency, duration);
+            await beepPlayer.Beep(frequency, duration, cancellationToken);
         }
         
 
