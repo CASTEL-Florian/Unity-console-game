@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Text;
 using Cysharp.Threading.Tasks;
@@ -20,8 +21,8 @@ namespace UnityConsole
         [SerializeField] private Vector2Int defaultWindowSize = new Vector2Int(960, 540);
         [SerializeField] bool fixedAspectRatio = true;
         [SerializeField] bool isInputBufferActive = false;
-        [SerializeField] bool isWordWrappingEnabled = false;
         
+        [SerializeField] private BeepPlayer beepPlayer;
         [SerializeField] private RectTransform consoleRectTransform;
         
         
@@ -49,9 +50,7 @@ namespace UnityConsole
         
         private float pixelsPerUnit;
         
-        private readonly Queue inputBuffer = new Queue();
-        
-        private readonly string zws = char.ConvertFromUtf32(0x200B);
+        private readonly Queue inputBuffer = new();
 
         public int WindowWidth
         {
@@ -185,14 +184,14 @@ namespace UnityConsole
                 consoleText.ForceMeshUpdate();
                 characterHeight = consoleText.GetRenderedValues().y;
                 consoleText.text = "";
-                bodyText = $"<mspace={CharacterSpacing}>";
-                backgroundText = $"<mspace={CharacterSpacing}>";
+                bodyText = FormattableString.Invariant($"<mspace={CharacterSpacing}>");
+                backgroundText = FormattableString.Invariant($"<mspace={CharacterSpacing}>");
                 BackgroundColor = Color.clear;
                 ForegroundColor = defaultForegroundColor;
                 
                 pixelsPerUnit = defaultWindowSize.y / (2 * consoleCamera.Size);
 
-                if (!fixedAspectRatio)
+                if (!fixedAspectRatio && Application.platform != RuntimePlatform.WebGLPlayer)
                 {
                     Screen.SetResolution(defaultWindowSize.x, defaultWindowSize.y, FullScreenMode.Windowed);
                     consoleCamera.AspectRatio = (float)defaultWindowSize.x / defaultWindowSize.y;
@@ -299,17 +298,13 @@ namespace UnityConsole
         public void Write(string value)
         {
             string text = value.Replace("\r", "");
-            if (!isWordWrappingEnabled)
-            {
-                text = string.Join(zws, text.ToCharArray()) + zws;
-            }
             bodyText += text.Replace("\n", "<br>");
 
             
             char[] chars = value.ToCharArray();
             for (int i = 0; i < chars.Length; i++)
             {
-                if ((chars[i] != ' ' || !isWordWrappingEnabled) && chars[i] != '\n')
+                if ((chars[i] != ' ') && chars[i] != '\n')
                 {
                     chars[i] = '_';
                 }
@@ -332,8 +327,7 @@ namespace UnityConsole
             }
             else
             {
-                bodyText += value + (isWordWrappingEnabled ? "" : zws);
-                if (value == ' ' && isWordWrappingEnabled)
+                if (value == ' ')
                 {
                     backgroundText += " ";
                 }
@@ -395,9 +389,9 @@ namespace UnityConsole
 
         public void Clear()
         {
-            bodyText = $"<mspace=0.2><color=#{ColorUtility.ToHtmlStringRGB(currentForegroundColor)}>";
-            backgroundText = $"<mspace=0.2><color=#{ColorUtility.ToHtmlStringRGB(currentBackgroundColor)}>";
-            backgroundText += $"<mark=#{ColorUtility.ToHtmlStringRGBA(currentBackgroundColor)}>";
+            bodyText = FormattableString.Invariant($"<mspace={CharacterSpacing}><color=#{ColorUtility.ToHtmlStringRGB(currentForegroundColor)}>");
+            backgroundText = FormattableString.Invariant($"<mspace={CharacterSpacing}><color=#{ColorUtility.ToHtmlStringRGB(currentBackgroundColor)}>");
+            backgroundText += FormattableString.Invariant($"<mark=#{ColorUtility.ToHtmlStringRGBA(currentBackgroundColor)}>");
             inputText = "";
             needsUpdate = true;
         }
@@ -406,6 +400,11 @@ namespace UnityConsole
         {
             ForegroundColor = defaultForegroundColor;
             BackgroundColor = Color.clear;
+        }
+
+        public async UniTask Beep(int frequency = 800, int duration = 200)
+        {
+            await beepPlayer.Beep(frequency, duration);
         }
         
 
@@ -446,20 +445,20 @@ namespace UnityConsole
             {
                 return;
             }
-            if (!fixedAspectRatio)
+            if (!fixedAspectRatio && Application.platform != RuntimePlatform.WebGLPlayer)
             {
-                Screen.SetResolution((int)(((WindowWidth + 0.1f) * CharacterSpacing + 2 * borderSize) * pixelsPerUnit),
+                Screen.SetResolution((int)((WindowWidth * CharacterSpacing + 2 * borderSize) * pixelsPerUnit),
                     (int)(WindowHeight * characterHeight * pixelsPerUnit), FullScreenMode.Windowed);
                 consoleCamera.AspectRatio = (WindowWidth * CharacterSpacing + 2 * borderSize) / (WindowHeight * characterHeight);
             }
             float cameraSize;
-            if (WindowHeight * characterHeight * consoleCamera.AspectRatio > (WindowWidth + 0.1f) * CharacterSpacing + 2 * borderSize) // Height is the limiting factor
+            if (WindowHeight * characterHeight * consoleCamera.AspectRatio > WindowWidth * CharacterSpacing + 2 * borderSize) // Height is the limiting factor
             {
                 cameraSize = WindowHeight * characterHeight / 2;
             }
             else // Width is the limiting factor
             {
-                cameraSize = ((WindowWidth + 0.1f) * CharacterSpacing + 2 * borderSize) / consoleCamera.AspectRatio / 2;
+                cameraSize = (WindowWidth * CharacterSpacing + 2 * borderSize) / consoleCamera.AspectRatio / 2;
             }
             consoleCamera.SetCameraSize(cameraSize);
 

@@ -113,6 +113,11 @@ namespace UnityConsole
             UnityConsole.Instance.ResetColor();
         }
         
+        public static async UniTask Beep(int frequency = 800, int duration = 200)
+        {
+            await UnityConsole.Instance.Beep(frequency, duration);
+        }
+        
         public static async UniTask WaitUntil(Func<bool> condition, int frequency = 16)
         {
             await UniTask.Create(async () =>
