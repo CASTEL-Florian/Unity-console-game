@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -290,11 +291,15 @@ public class FPSProgram : MonoBehaviour
     {
         Console.WindowWidth = screenWidth;
         Console.WindowHeight = screenHeight;
-        UniTask.Create(Play);
+        UniTask.Create(() => Play(this.GetCancellationTokenOnDestroy()));
     }
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            SceneManager.LoadScene(0);
+        }
         if (startNewGame)
         {
             startNewGame = false;
@@ -302,7 +307,7 @@ public class FPSProgram : MonoBehaviour
         }
     }
 
-    private async UniTask Play()
+    private async UniTask Play(CancellationToken cancellationToken = default)
     {
         screen = new char[screenWidth, screenHeight];
         depthBuffer = new float[screenWidth, screenHeight];
@@ -353,14 +358,14 @@ public class FPSProgram : MonoBehaviour
         Console.WriteLine("Press any key to begin...");
         Console.WriteLine("");
 
-        await Console.ReadKey(true);
+        await Console.ReadKey(true, cancellationToken);
 
         gameTimeStopwatch = Stopwatch.StartNew();
         Console.Clear();
         stopwatch = Stopwatch.StartNew();
         while (!closeRequested)
         {
-            await UpdateGame();
+            await UpdateGame(cancellationToken);
             if (backToMenu)
             {
                 backToMenu = false;
@@ -369,8 +374,9 @@ public class FPSProgram : MonoBehaviour
             }
 
 
+            if (cancellationToken.IsCancellationRequested) return;
             Render();
-            await Console.Sleep(16);
+            await Console.Sleep(16, cancellationToken);
         }
         
 
@@ -379,7 +385,7 @@ public class FPSProgram : MonoBehaviour
     }
 
 
-    private async UniTask UpdateGame()
+    private async UniTask UpdateGame(CancellationToken cancellationToken = default)
     {
         if (gameTimeStopwatch.Elapsed > gameTime)
         {
@@ -394,7 +400,7 @@ public class FPSProgram : MonoBehaviour
 
         while (Console.KeyAvailable)
         {
-            switch (await Console.ReadKey(true))
+            switch (await Console.ReadKey(true, cancellationToken))
             {
                 case KeyCode.Return:
                     backToMenu = true;
@@ -554,7 +560,6 @@ public class FPSProgram : MonoBehaviour
         stopwatch.Restart();
 
         
-        Debug.Log(Console.GetKeyState(KeyCode.W));
         u = u || Console.GetKeyState(KeyCode.W) && !gameOver;
         l = l || Console.GetKeyState(KeyCode.A) && !gameOver;
         d = d || Console.GetKeyState(KeyCode.S) && !gameOver;

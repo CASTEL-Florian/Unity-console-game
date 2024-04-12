@@ -6,8 +6,6 @@ namespace UnityConsole
     public class ConsoleCamera : MonoBehaviour
     {
         [SerializeField] private TextMeshProUGUI consoleText;
-        [SerializeField] private Transform textMask;
-
         [SerializeField] private Camera cam;        
         public float AspectRatio
         {
@@ -22,7 +20,6 @@ namespace UnityConsole
         public void SetCameraSize(float size)
         {
             cam.orthographicSize = size;
-            textMask.localScale = new Vector3(2 * cam.aspect * size, size, 1f);
         }
 
         private void Update()
@@ -32,12 +29,8 @@ namespace UnityConsole
             if (renderedValues.y < ConsoleBottom)
             {
                 transform.position = new Vector3(position.x, 0, position.z);
-                textMask.gameObject.SetActive(false);
                 return;
             }
-            textMask.gameObject.SetActive(true);
-            
-            textMask.localPosition = new Vector3(0, ConsoleBottom / 2 + textMask.localScale.y / 2 , 10);
             transform.position = new Vector3(position.x, ConsoleBottom - renderedValues.y, position.z);
         }
     }

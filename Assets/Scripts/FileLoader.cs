@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -10,42 +11,43 @@ namespace UnityConsole
 {
    public static class FileLoader
    {
-      public static async UniTask<string[]> ReadAllLinesAsync(string path)
+      public static async UniTask<string[]> ReadAllLinesAsync(string path, CancellationToken cancellationToken = default)
       {
          if (Application.platform == RuntimePlatform.WebGLPlayer)
          {
-            return (await LoadFileTextWebGL(path)).Split('\n').Select((x) => x.Trim('\r')).ToArray();
+            return (await LoadFileTextWebGL(path, cancellationToken)).Split('\n').Select((x) => x.Trim('\r')).ToArray();
          }
 
-         return await File.ReadAllLinesAsync(path);
+         return await File.ReadAllLinesAsync(path, cancellationToken);
       }
       
-      public static async UniTask<string> ReadAllTextAsync(string path)
+      public static async UniTask<string> ReadAllTextAsync(string path, CancellationToken cancellationToken = default)
       {
          if (Application.platform == RuntimePlatform.WebGLPlayer)
          {
-            return await LoadFileTextWebGL(path);
+            return await LoadFileTextWebGL(path, cancellationToken:cancellationToken);
          }
 
-         return await File.ReadAllTextAsync(path);
+         return await File.ReadAllTextAsync(path, cancellationToken);
       }
       
-      public static async UniTask<byte[]> ReadAllBytesAsync(string path)
+      public static async UniTask<byte[]> ReadAllBytesAsync(string path, CancellationToken cancellationToken = default)
       {
          if (Application.platform == RuntimePlatform.WebGLPlayer)
          {
             return await LoadFileBytesWebGL(path);
          }
 
-         return await File.ReadAllBytesAsync(path);
+         return await File.ReadAllBytesAsync(path, cancellationToken);
       }
 
-      private static async UniTask<string> LoadFileTextWebGL(string filePath)
+      private static async UniTask<string> LoadFileTextWebGL(string filePath, CancellationToken cancellationToken = default)
       {
          using (UnityWebRequest webRequest =
                 UnityWebRequest.Get(filePath))
          {
             await webRequest.SendWebRequest();
+            
             if (webRequest.result != UnityWebRequest.Result.Success)
             {
                Debug.LogError(webRequest.error);

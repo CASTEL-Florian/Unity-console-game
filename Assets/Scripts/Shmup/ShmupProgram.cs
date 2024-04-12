@@ -4,8 +4,10 @@ using UnityEngine;
 using Random = System.Random;
 using System.Diagnostics;
 using System.Text;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Shmup.Enemies;
+using UnityEngine.SceneManagement;
 using Console = UnityConsole.Console;
 
 namespace Shmup
@@ -47,10 +49,19 @@ namespace Shmup
 
         private void Start()
         {
-            UniTask.Create(Play);
+            UniTask.Create(() => Play(this.GetCancellationTokenOnDestroy()));
         }
 
-        internal async UniTask Play()
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                SceneManager.LoadScene(0);
+            }
+        }
+
+
+        internal async UniTask Play(CancellationToken cancellationToken = default)
         {
             consoleWidth = Console.WindowWidth;
             consoleHeight = Console.WindowHeight;
@@ -77,14 +88,15 @@ namespace Shmup
                 Initialize();
                 while (!closeRequested && playing)
                 {
-                    await Update();
+                    await UpdateGame(cancellationToken);
                     if (closeRequested)
                     {
                         return;
                     }
 
+                    if (cancellationToken.IsCancellationRequested) return;
                     Render();
-                    await SleepAfterRender();
+                    await SleepAfterRender(cancellationToken);
                 }
             }
         }
@@ -106,7 +118,7 @@ namespace Shmup
             waitingForInput = true;
         }
 
-        internal async UniTask Update()
+        internal async UniTask UpdateGame(CancellationToken cancellationToken = default)
         {
             bool u = false;
             bool d = false;
@@ -115,7 +127,7 @@ namespace Shmup
             bool shoot = false;
             while (Console.KeyAvailable)
             {
-                switch (await Console.ReadKey(true))
+                switch (await Console.ReadKey(true, cancellationToken))
                 {
                     case KeyCode.Escape:
                         closeRequested = true;
@@ -408,12 +420,12 @@ namespace Shmup
             }
         }
 
-        internal static async UniTask SleepAfterRender()
+        internal static async UniTask SleepAfterRender(CancellationToken cancellationToken = default)
         {
             float sleep = 1f / 120f - stopwatch.Elapsed.Seconds;
             if (sleep > 0)
             {
-                await Console.Sleep((int)(sleep * 1000));
+                await Console.Sleep((int)(sleep * 1000), cancellationToken);
             }
 
             stopwatch.Restart();

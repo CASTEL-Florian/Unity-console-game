@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityConsole;
@@ -45,23 +46,24 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// Start the first path
         /// </summary>
-        public async UniTask StartGame()
+        public async UniTask StartGame(CancellationToken cancellationToken = default)
         {
             //Console.WriteLine("TESTING NewGameModifier: " + Globals.NewGameModifier);
             Globals.StartTime = DateTime.Now;
             CurrentPath = GeneratePath(PathDifficulty.Easy);
-            await CurrentPath.TraversePath();
+            if (cancellationToken.IsCancellationRequested) return;
+            await CurrentPath.TraversePath(cancellationToken);
         }
 
-        public async UniTask LoadFiles()
+        public async UniTask LoadFiles(CancellationToken cancellationToken = default)
         {
             ReturnToTownMessages = await FileLoader.ReadAllLinesAsync
-                (Path.Combine(Application.streamingAssetsPath, Globals.ReturnToTownMessagesPath));
+                (Path.Combine(Application.streamingAssetsPath, Globals.ReturnToTownMessagesPath), cancellationToken);
             PathStartMessages = await FileLoader.ReadAllLinesAsync
-                (Path.Combine(Application.streamingAssetsPath, Globals.PathStartMessagesPath));
+                (Path.Combine(Application.streamingAssetsPath, Globals.PathStartMessagesPath), cancellationToken);
             PathCompletionMessages = await FileLoader.ReadAllLinesAsync
-                (Path.Combine(Application.streamingAssetsPath, Globals.PathCompletionMessagesPath));
-            await Player.LoadEnvironmentObservations();
+                (Path.Combine(Application.streamingAssetsPath, Globals.PathCompletionMessagesPath), cancellationToken);
+            await Player.LoadEnvironmentObservations(cancellationToken);
         }
 
         /// <summary>
@@ -83,10 +85,10 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// 
         /// </summary>
-        public async UniTask SimulateRegularCombat(Enemy enemy)
+        public async UniTask SimulateRegularCombat(Enemy enemy, CancellationToken cancellationToken = default)
         {
             TextHelper.PrintTextInColor($"\nYou've encountered {enemy.Name}, {enemy.CurrentHp} HP", Color.yellow);
-            await Console.Sleep(500);
+            await Console.Sleep(500, cancellationToken);
             do
             {
                 if (Random.NextDouble() < enemy.DodgeChance)
@@ -110,7 +112,7 @@ namespace Text_Based_Game.Classes
                         TextHelper.PrintTextInColor($"You attack {enemy.Name} {playerAttack[0]} times for a total of {playerAttack[1]} dmg, {enemy.CurrentHp}/{enemy.MaxHp} HP", Color.yellow);
                     }
                 }
-                await Console.Sleep(500);
+                await Console.Sleep(500, cancellationToken);
 
                 if (enemy.CurrentHp > 0)
                 {
@@ -118,7 +120,8 @@ namespace Text_Based_Game.Classes
                     Player.TakeDamage(enemyDamage);
                     TextHelper.PrintTextInColor($"{enemy.Name} attacks, you take {enemyDamage} dmg, {Player.CurrentHp}/{Player.MaxHp} HP", darkYellow);
                 }
-                await Console.Sleep(500);
+                await Console.Sleep(500, cancellationToken);
+                if (cancellationToken.IsCancellationRequested) return;
 
             } while (enemy.CurrentHp > 0 && Player.CurrentHp > 0);
 
@@ -140,17 +143,18 @@ namespace Text_Based_Game.Classes
             else
             {
                 Player.IsDead = true;
-                await CurrentPath.TeleportToTown(enemy.Name);
+                if (cancellationToken.IsCancellationRequested) return;
+                await CurrentPath.TeleportToTown(enemy.Name, cancellationToken);
             }
         }
 
         /// <summary>
         /// 
         /// </summary>
-        public async UniTask SimulateBossCombat(Boss boss)
+        public async UniTask SimulateBossCombat(Boss boss, CancellationToken cancellationToken = default)
         {
             TextHelper.PrintTextInColor($"\nYou've encountered {boss.Name}, {boss.CurrentHp} HP", Color.red);
-            await Console.Sleep(500);
+            await Console.Sleep(500, cancellationToken);
             do
             {
                 if (Random.NextDouble() < boss.DodgeChance)
@@ -174,7 +178,7 @@ namespace Text_Based_Game.Classes
                         TextHelper.PrintTextInColor($"You attack {boss.Name} {playerAttack[0]} times for a total of {playerAttack[1]} dmg, {boss.CurrentHp}/{boss.MaxHp} HP", Color.red);
                     }
                 }
-                await Console.Sleep(500);
+                await Console.Sleep(500, cancellationToken);
 
                 if (boss.CurrentHp > 0)
                 {
@@ -182,8 +186,8 @@ namespace Text_Based_Game.Classes
                     Player.TakeDamage(enemyDamage);
                     TextHelper.PrintTextInColor($"{boss.Name} attacks, you take {enemyDamage} dmg, {Player.CurrentHp}/{Player.MaxHp} HP", darkRed);
                 }
-                await Console.Sleep(500);
-
+                await Console.Sleep(500, cancellationToken);
+                if (cancellationToken.IsCancellationRequested) return;
             } while (boss.CurrentHp > 0 && Player.CurrentHp > 0);
 
             if (boss.CurrentHp <= 0)
@@ -206,14 +210,15 @@ namespace Text_Based_Game.Classes
                 if (Player.Respawns > 0)
                 {
                     Console.Write($"Would you like to (r)espawn ({Player.Respawns} / 3) or (t)eleport to town?: ");
-                    KeyCode key = await Console.ReadKey();
+                    KeyCode key = await Console.ReadKey(cancellationToken: cancellationToken);
                     bool isValidInput = false;
                     if (key == KeyCode.R || key == KeyCode.T) isValidInput = true;
                     while (!isValidInput)
                     {
                         Console.Write("\ntry again: ");
-                        key = await Console.ReadKey();
+                        key = await Console.ReadKey(cancellationToken: cancellationToken);
                         if (key == KeyCode.R || key == KeyCode.T) isValidInput = true;
+                        if (cancellationToken.IsCancellationRequested) return;
                     }
 
                     if (key == KeyCode.R)
@@ -221,37 +226,41 @@ namespace Text_Based_Game.Classes
                         Player.Respawns--;
                         Player.Heal((int)Player.MaxHp / 2);
                         Player.IsDead = false;
-                        await SimulateBossCombat(boss);
+                        if (cancellationToken.IsCancellationRequested) return;
+                        await SimulateBossCombat(boss, cancellationToken);
                     }
                     else
                     {
                         TextHelper.LineSpacing(0);
                         Player.IsDead = true;
-                        await CurrentPath.TeleportToTown(boss.Name);
+                        if (cancellationToken.IsCancellationRequested) return;
+                        await CurrentPath.TeleportToTown(boss.Name, cancellationToken);
                     }
                 }
                 else
                 {
                     Player.IsDead = true;
-                    await CurrentPath.TeleportToTown(boss.Name);
+                    if (cancellationToken.IsCancellationRequested) return;
+                    await CurrentPath.TeleportToTown(boss.Name, cancellationToken);
                 }
             }
             TextHelper.ChangeForegroundColor(Color.gray);
         }
         
 
-        public async UniTask ChoosePath()
+        public async UniTask ChoosePath(CancellationToken cancellationToken = default)
         {
             if (!CanTakeFinalPath)
             {
                 Console.Write("\nDo you want to venture down the (e)asy, (m)edium or (h)ard path?: ");
-                KeyCode key = await Console.ReadKey();
+                KeyCode key = await Console.ReadKey(cancellationToken: cancellationToken);
                 bool validInput = false;
                 if (key == KeyCode.E || key == KeyCode.M || key == KeyCode.H) validInput = true;
                 while (!validInput)
                 {
                     Console.Write("\nNo choice was made, please try again: ");
-                    key = await Console.ReadKey();
+                    key = await Console.ReadKey(cancellationToken: cancellationToken);
+                    if (cancellationToken.IsCancellationRequested) return;
                     if (key == KeyCode.E || key == KeyCode.M || key == KeyCode.H) validInput = true;
                 }
 
@@ -271,13 +280,14 @@ namespace Text_Based_Game.Classes
             else
             {
                 Console.Write("\nDo you want to venture down the (e)asy, (m)edium, (h)ard or (f)inal path?: ");
-                KeyCode key = await Console.ReadKey();
+                KeyCode key = await Console.ReadKey(cancellationToken: cancellationToken);
                 bool validInput = false;
                 if (key == KeyCode.E || key == KeyCode.M || key == KeyCode.H || key == KeyCode.F) validInput = true;
                 while (!validInput)
                 {
                     Console.Write("\nNo choice was made, please try again: ");
-                    key = await Console.ReadKey();
+                    key = await Console.ReadKey(cancellationToken: cancellationToken);
+                    if (cancellationToken.IsCancellationRequested) return;
                     if (key == KeyCode.E || key == KeyCode.M || key == KeyCode.H || key == KeyCode.F) validInput = true;
                 }
 
@@ -298,18 +308,18 @@ namespace Text_Based_Game.Classes
                 }
             }
             Console.WriteLine("\n");
-            await CurrentPath.TraversePath();
+            await CurrentPath.TraversePath(cancellationToken);
         }
 
         /// <summary>
         /// 
         /// </summary>
-        public async UniTask ShowTownOptions()
+        public async UniTask ShowTownOptions(CancellationToken cancellationToken = default)
         {
             Player.IsDead = false;
             if (Player.CurrentLocation != Location.Town)
             {
-                await TextHelper.PrintStringCharByChar(ReturnToTownMessages[Random.Next(ReturnToTownMessages.Length)], Color.white);
+                await TextHelper.PrintStringCharByChar(ReturnToTownMessages[Random.Next(ReturnToTownMessages.Length)], Color.white, cancellationToken);
                 Player.CurrentLocation = Location.Town;
                 Player.SetCurrentHpToMax();
             }
@@ -323,17 +333,18 @@ namespace Text_Based_Game.Classes
             while (!validInput)
             {
                 Console.Write("\nNo choice was made, please try again: ");
-                key = await Console.ReadKey();
+                key = await Console.ReadKey(cancellationToken: cancellationToken);
+                if (cancellationToken.IsCancellationRequested) return;
                 if (key == KeyCode.S || key == KeyCode.P) validInput = true;
             }
 
             if (key == KeyCode.S)
             {
-                await Player.ShowStats();
+                await Player.ShowStats(cancellationToken);
             }
             else if (key == KeyCode.P)
             {
-                await ChoosePath();
+                await ChoosePath(cancellationToken);
             }
         }
 

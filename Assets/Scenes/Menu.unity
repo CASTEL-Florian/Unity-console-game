@@ -134,7 +134,7 @@ GameObject:
   - component: {fileID: 394811582}
   - component: {fileID: 394811583}
   m_Layer: 0
-  m_Name: TextAdventure
+  m_Name: Menu
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -164,9 +164,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 394811580}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6966885f3774bab4a8a19103ec39fb76, type: 3}
+  m_Script: {fileID: 11500000, guid: f32d24938f44cdf4f855d57a07fa4126, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  menuItems:
+  - name: Features demo
+    sceneIndex: 1
+  - name: Shmup
+    sceneIndex: 2
+  - name: First person shooter
+    sceneIndex: 3
+  - name: 2048
+    sceneIndex: 4
+  - name: Text Adventure
+    sceneIndex: 5
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -480,7 +491,7 @@ MonoBehaviour:
   borderSize: 0.5
   consoleCamera: {fileID: 519420033}
   defaultWindowSize: {x: 960, y: 540}
-  fixedAspectRatio: 1
+  fixedAspectRatio: 0
   isInputBufferActive: 0
   beepPlayer: {fileID: 0}
   consoleRectTransform: {fileID: 1119556340}

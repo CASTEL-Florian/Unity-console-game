@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -34,18 +35,6 @@ namespace UnityConsole
         {
             get => UnityConsole.Instance.WindowHeight;
             set => UnityConsole.Instance.WindowHeight = value;
-        }
-        
-        public static bool CenterContentX
-        {
-            get => UnityConsole.Instance.CenterContentX;
-            set => UnityConsole.Instance.CenterContentX = value;
-        }
-        
-        public static bool CenterContentY
-        {
-            get => UnityConsole.Instance.CenterContentY;
-            set => UnityConsole.Instance.CenterContentY = value;
         }
         
         public static float BorderSize
@@ -86,14 +75,14 @@ namespace UnityConsole
             UnityConsole.Instance.WriteLine();
         }
 
-        public static async UniTask<string> ReadLine()
+        public static async UniTask<string> ReadLine(CancellationToken cancellationToken = default)
         {
-            return await UnityConsole.Instance.ReadLine();
+            return await UnityConsole.Instance.ReadLine(cancellationToken);
         }
         
-        public static async UniTask<KeyCode> ReadKey(bool intercept = false)
+        public static async UniTask<KeyCode> ReadKey(bool intercept = false, CancellationToken cancellationToken = default)
         {
-            return await UnityConsole.Instance.ReadKey(intercept);
+            return await UnityConsole.Instance.ReadKey(intercept, cancellationToken);
         }
         
         public static bool GetKeyState(KeyCode key)
@@ -113,22 +102,22 @@ namespace UnityConsole
             UnityConsole.Instance.ResetColor();
         }
         
-        public static async UniTask Beep(int frequency = 800, int duration = 200)
+        public static async UniTask Beep(int frequency = 800, int duration = 200, CancellationToken cancellationToken = default)
         {
-            await UnityConsole.Instance.Beep(frequency, duration);
+            await UnityConsole.Instance.Beep(frequency, duration, cancellationToken);
         }
         
-        public static async UniTask WaitUntil(Func<bool> condition, int frequency = 16)
+        public static async UniTask WaitUntil(Func<bool> condition, int frequency = 16, CancellationToken cancellationToken = default)
         {
             await UniTask.Create(async () =>
             {
-                while (!condition()) await UniTask.Delay(frequency);
+                while (!condition()) await UniTask.Delay(frequency, cancellationToken:cancellationToken);
             });
         }
 
-        public static async UniTask Sleep(int milliseconds)
+        public static async UniTask Sleep(int milliseconds, CancellationToken cancellationToken = default)
         {
-            await UniTask.Delay(milliseconds);
+            await UniTask.Delay(milliseconds, cancellationToken:cancellationToken);
         }
     }
 }

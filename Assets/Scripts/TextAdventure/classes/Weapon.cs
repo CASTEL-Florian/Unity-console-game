@@ -1,4 +1,5 @@
 using System.IO;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityConsole;
 using UnityEngine;
@@ -272,7 +273,7 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// Reads all lines of a file containing weapon names and returns a random name
         /// </summary>
-        public async UniTask GenerateWeaponName()
+        public async UniTask GenerateWeaponName(CancellationToken cancellationToken = default)
         {
             string[] allNames;
 
@@ -280,25 +281,25 @@ namespace Text_Based_Game.Classes
             {
                 case Rarity.Common:
                     allNames = await FileLoader.ReadAllLinesAsync
-(Path.Combine(Application.streamingAssetsPath, Globals.CommonNamePath));
+(Path.Combine(Application.streamingAssetsPath, Globals.CommonNamePath), cancellationToken);
                     Name = allNames[Random.Next(allNames.Length)];
                     break;
 
                 case Rarity.Uncommon:
                     allNames = await FileLoader.ReadAllLinesAsync
-(Path.Combine(Application.streamingAssetsPath,Globals.UncommonNamePath));
+(Path.Combine(Application.streamingAssetsPath,Globals.UncommonNamePath), cancellationToken);
                     Name = allNames[Random.Next(allNames.Length)];
                     break;
 
                 case Rarity.Rare:
                     allNames = await FileLoader.ReadAllLinesAsync
-(Path.Combine(Application.streamingAssetsPath,Globals.RareNamePath));
+(Path.Combine(Application.streamingAssetsPath,Globals.RareNamePath), cancellationToken);
                     Name = allNames[Random.Next(allNames.Length)];
                     break;
 
                 case Rarity.Epic:
                     allNames = await FileLoader.ReadAllLinesAsync
-(Path.Combine(Application.streamingAssetsPath,Globals.EpicNamePath));
+(Path.Combine(Application.streamingAssetsPath,Globals.EpicNamePath), cancellationToken);
                     Name = allNames[Random.Next(allNames.Length)];
                     break;
                 default:

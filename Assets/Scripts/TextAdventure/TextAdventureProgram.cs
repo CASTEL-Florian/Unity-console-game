@@ -1,6 +1,8 @@
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Text_Based_Game.Classes;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Console = UnityConsole.Console;
 
 namespace Text_Based_Game
@@ -15,6 +17,10 @@ namespace Text_Based_Game
 
         private void Update()
         {
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                SceneManager.LoadScene(0);
+            }
             if (quitApplication)
             {
                 Application.Quit();
@@ -24,20 +30,20 @@ namespace Text_Based_Game
         private async UniTask Play()
         {
             // print the title
-            await TextHelper.PrintTextFile(Globals.TitlePath, false);
+            await TextHelper.PrintTextFile(Globals.TitlePath, false, this.GetCancellationTokenOnDestroy());
             // spacing
             TextHelper.LineSpacing(0);
             // wait 2.5 seconds
             //await Console.Sleep(2500);
             // print the intro lore
-            await TextHelper.PrintTextFile(Globals.IntroPath, true);
+            await TextHelper.PrintTextFile(Globals.IntroPath, true, this.GetCancellationTokenOnDestroy());
             // spacing
             TextHelper.LineSpacing(0);
             // ask the player if they want to start the game
             Console.Write("Are you ready to start your adventure? (Y)es or any other key to quit: ");
             // get input
             
-            KeyCode key = await Console.ReadKey();
+            KeyCode key = await Console.ReadKey(cancellationToken:this.GetCancellationTokenOnDestroy());
             // if input does not equal 'Y'/'y', quit game
             if (key != KeyCode.Y)
             {
@@ -60,9 +66,9 @@ namespace Text_Based_Game
             TextHelper.LineSpacing();
             // initialize GameManager
             GameManager gameManager = new();
-            await gameManager.LoadFiles();
+            await gameManager.LoadFiles(this.GetCancellationTokenOnDestroy());
             // start game
-            await gameManager.StartGame();
+            await gameManager.StartGame(this.GetCancellationTokenOnDestroy());
         }
     }
 }

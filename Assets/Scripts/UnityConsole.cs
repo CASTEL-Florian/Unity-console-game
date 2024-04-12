@@ -17,16 +17,14 @@ namespace UnityConsole
         [SerializeField] private int defaultWindowHeight = 27;
         [SerializeField] private float borderSize = 0.5f;
         [SerializeField] private ConsoleCamera consoleCamera;
-        [SerializeField] private bool centerContentX = false;
-        [SerializeField] private bool centerContentY = false;
         [SerializeField] private Vector2Int defaultWindowSize = new Vector2Int(960, 540);
         [SerializeField] bool fixedAspectRatio = true;
         [SerializeField] bool isInputBufferActive = false;
-        
+
         [SerializeField] private BeepPlayer beepPlayer;
         [SerializeField] private RectTransform consoleRectTransform;
-        
-        
+
+
         private string backgroundText;
         private string bodyText;
         private string inputText;
@@ -45,12 +43,12 @@ namespace UnityConsole
         private readonly string invisibleCursor = "<alpha=#00>|";
         bool isBlinkCursorActive;
         private Coroutine blinkCursorCoroutine;
-        
+
         private const float CharacterSpacing = 0.2f;
-        private float characterHeight;
-        
+        private const float CharacterHeight = 0.36f;
+
         private float pixelsPerUnit;
-        
+
         private readonly Queue inputBuffer = new();
 
         public int WindowWidth
@@ -62,22 +60,24 @@ namespace UnityConsole
                 {
                     return;
                 }
+
                 consoleRectTransform.sizeDelta =
-                    new Vector2((value + 0.1f) * CharacterSpacing, consoleRectTransform.sizeDelta.y);
+                    new Vector2((value + 0.3f) * CharacterSpacing, consoleRectTransform.sizeDelta.y);
                 UpdateCamera();
             }
         }
 
         public int WindowHeight
         {
-            get => Mathf.RoundToInt(consoleCamera.ConsoleBottom / characterHeight);
+            get => Mathf.RoundToInt(consoleCamera.ConsoleBottom / CharacterHeight);
             set
             {
                 if (WindowHeight == value)
                 {
                     return;
                 }
-                consoleCamera.ConsoleBottom = value * characterHeight;
+
+                consoleCamera.ConsoleBottom = value * CharacterHeight;
                 UpdateCamera();
             }
         }
@@ -92,7 +92,7 @@ namespace UnityConsole
                 bodyText += $"<color=#{ColorUtility.ToHtmlStringRGBA(currentForegroundColor)}>";
             }
         }
-        
+
         public Color BackgroundColor
         {
             get => currentBackgroundColor;
@@ -103,27 +103,7 @@ namespace UnityConsole
                 backgroundText += $"<mark=#{ColorUtility.ToHtmlStringRGBA(currentBackgroundColor)}>";
             }
         }
-        
-        public bool CenterContentX
-        {
-            get => centerContentX;
-            set
-            {
-                centerContentX = value;
-                UpdateCamera();
-            }
-        }
-        
-        public bool CenterContentY
-        {
-            get => centerContentY;
-            set
-            {
-                centerContentY = value;
-                UpdateCamera();
-            }
-        }
-        
+
         public float BorderSize
         {
             get => borderSize;
@@ -135,18 +115,27 @@ namespace UnityConsole
         }
 
         private bool cursorVisible = true;
+
         public bool CursorVisible
         {
             get => cursorVisible;
             set
             {
                 cursorVisible = value;
-                cursor = cursorVisible ? visibleCursor : invisibleCursor;
+                if (cursorVisible)
+                {
+                    cursor = visibleCursor;
+                }
+                else
+                {
+                    cursor = "";
+                }
             }
         }
-        
-        public bool KeyAvailable => inputBuffer.Count > 0 && isInputBufferActive || Input.anyKeyDown && !isInputBufferActive; 
-        
+
+        public bool KeyAvailable =>
+            inputBuffer.Count > 0 && isInputBufferActive || Input.anyKeyDown && !isInputBufferActive;
+
         public bool InputBufferActive
         {
             get => isInputBufferActive;
@@ -166,11 +155,12 @@ namespace UnityConsole
                 {
                     pixelsPerUnit = 1;
                 }
+
                 pixelsPerUnit = value;
                 UpdateCamera();
             }
         }
-        
+
 
         public static UnityConsole Instance { get; private set; }
 
@@ -179,17 +169,17 @@ namespace UnityConsole
             if (Instance == null)
             {
                 Instance = this;
-                
+
                 // Initialize in Awake to ensure that the console is ready to use in Start
-                consoleText.text = "A";
-                consoleText.ForceMeshUpdate();
-                characterHeight = consoleText.GetRenderedValues().y;
-                consoleText.text = "";
+
                 bodyText = FormattableString.Invariant($"<mspace={CharacterSpacing}>");
+                bodyText += FormattableString.Invariant($"<line-height={CharacterHeight}>");
                 backgroundText = FormattableString.Invariant($"<mspace={CharacterSpacing}>");
+                backgroundText += FormattableString.Invariant($"<line-height={CharacterHeight}>");
+
                 BackgroundColor = Color.clear;
                 ForegroundColor = defaultForegroundColor;
-                
+
                 pixelsPerUnit = defaultWindowSize.y / (2 * consoleCamera.Size);
 
                 if (!fixedAspectRatio && Application.platform != RuntimePlatform.WebGLPlayer)
@@ -197,7 +187,7 @@ namespace UnityConsole
                     Screen.SetResolution(defaultWindowSize.x, defaultWindowSize.y, FullScreenMode.Windowed);
                     consoleCamera.AspectRatio = (float)defaultWindowSize.x / defaultWindowSize.y;
                 }
-        
+
                 WindowWidth = defaultWindowWidth;
                 WindowHeight = defaultWindowHeight;
             }
@@ -219,7 +209,7 @@ namespace UnityConsole
                 UpdateConsoleText();
                 needsUpdate = false;
             }
-            
+
             if (isInputBufferActive && Input.anyKeyDown)
             {
                 if (Input.inputString.Length > 0)
@@ -227,13 +217,13 @@ namespace UnityConsole
                     inputBuffer.Enqueue(Input.inputString);
                 }
             }
-            
+
             if (!isGettingKey && !isGettingLine)
             {
                 return;
             }
 
-            
+
             if (isGettingKey)
             {
                 if (inputBuffer.Count > 0)
@@ -267,6 +257,7 @@ namespace UnityConsole
             {
                 input = Input.inputString;
             }
+
             foreach (char c in input)
             {
                 if (c == '\b')
@@ -293,7 +284,6 @@ namespace UnityConsole
         {
             WriteLine(command);
             isGettingLine = false;
-
         }
 
         public void Write(string value)
@@ -301,7 +291,7 @@ namespace UnityConsole
             string text = value.Replace("\r", "");
             bodyText += text.Replace("\n", "<br>");
 
-            
+
             char[] chars = value.ToCharArray();
             for (int i = 0; i < chars.Length; i++)
             {
@@ -334,12 +324,13 @@ namespace UnityConsole
         {
             isGettingLine = true;
             isBlinkCursorActive = true;
-            await Console.WaitUntil(() => !isGettingLine, cancellationToken:cancellationToken);
+            await Console.WaitUntil(() => !isGettingLine, cancellationToken: cancellationToken);
             isBlinkCursorActive = false;
             if (cursorVisible)
             {
                 cursor = visibleCursor;
             }
+
             string result = inputText;
             inputText = "";
             return result;
@@ -349,7 +340,7 @@ namespace UnityConsole
         {
             isGettingKey = true;
             isBlinkCursorActive = true;
-            await Console.WaitUntil(() => !isGettingKey, cancellationToken:cancellationToken);
+            await Console.WaitUntil(() => !isGettingKey, cancellationToken: cancellationToken);
             isBlinkCursorActive = false;
 
             if ((int)KeyCode.A <= (int)keyCode && (int)keyCode <= (int)KeyCode.Z) // If the key is a letter.
@@ -364,15 +355,20 @@ namespace UnityConsole
             {
                 cursor = visibleCursor;
             }
-            return keyCode;
 
+            return keyCode;
         }
 
         public void Clear()
         {
-            bodyText = FormattableString.Invariant($"<mspace={CharacterSpacing}><color=#{ColorUtility.ToHtmlStringRGB(currentForegroundColor)}>");
-            backgroundText = FormattableString.Invariant($"<mspace={CharacterSpacing}><color=#{ColorUtility.ToHtmlStringRGB(currentBackgroundColor)}>");
-            backgroundText += FormattableString.Invariant($"<mark=#{ColorUtility.ToHtmlStringRGBA(currentBackgroundColor)}>");
+            bodyText = FormattableString.Invariant(
+                $"<mspace={CharacterSpacing}><color=#{ColorUtility.ToHtmlStringRGBA(currentForegroundColor)}>");
+            backgroundText = FormattableString.Invariant(
+                $"<mspace={CharacterSpacing}><color=#{ColorUtility.ToHtmlStringRGBA(currentBackgroundColor)}>");
+            backgroundText +=
+                FormattableString.Invariant($"<mark=#{ColorUtility.ToHtmlStringRGBA(currentBackgroundColor)}>");
+            bodyText += FormattableString.Invariant($"<line-height={CharacterHeight}>");
+            backgroundText += FormattableString.Invariant($"<line-height={CharacterHeight}>");
             inputText = "";
             needsUpdate = true;
         }
@@ -383,11 +379,12 @@ namespace UnityConsole
             BackgroundColor = Color.clear;
         }
 
-        public async UniTask Beep(int frequency = 800, int duration = 200, CancellationToken cancellationToken = default)
+        public async UniTask Beep(int frequency = 800, int duration = 200,
+            CancellationToken cancellationToken = default)
         {
             await beepPlayer.Beep(frequency, duration, cancellationToken);
         }
-        
+
 
         private IEnumerator BlinkCursor()
         {
@@ -396,8 +393,10 @@ namespace UnityConsole
                 yield return new WaitForSeconds(0.5f);
                 if (!cursorVisible)
                 {
+                    cursor = "";
                     continue;
                 }
+
                 if (!isBlinkCursorActive)
                 {
                     cursor = visibleCursor;
@@ -426,46 +425,39 @@ namespace UnityConsole
             {
                 return;
             }
+
             if (!fixedAspectRatio && Application.platform != RuntimePlatform.WebGLPlayer)
             {
-                Screen.SetResolution((int)((WindowWidth * CharacterSpacing + 2 * borderSize) * pixelsPerUnit),
-                    (int)(WindowHeight * characterHeight * pixelsPerUnit), FullScreenMode.Windowed);
-                consoleCamera.AspectRatio = (WindowWidth * CharacterSpacing + 2 * borderSize) / (WindowHeight * characterHeight);
+                Screen.SetResolution((int)(((WindowWidth + 0.3f) * CharacterSpacing + 2 * borderSize) * pixelsPerUnit),
+                    (int)(WindowHeight * CharacterHeight * pixelsPerUnit), FullScreenMode.Windowed);
+                consoleCamera.AspectRatio =
+                    (WindowWidth * CharacterSpacing + 2 * borderSize) / (WindowHeight * CharacterHeight);
             }
+
             float cameraSize;
-            if (WindowHeight * characterHeight * consoleCamera.AspectRatio > WindowWidth * CharacterSpacing + 2 * borderSize) // Height is the limiting factor
+            if (WindowHeight * CharacterHeight * consoleCamera.AspectRatio >
+                (WindowWidth + 0.3f) * CharacterSpacing + 2 * borderSize) // Height is the limiting factor
             {
-                cameraSize = WindowHeight * characterHeight / 2;
+                cameraSize = WindowHeight * CharacterHeight / 2;
             }
             else // Width is the limiting factor
             {
-                cameraSize = (WindowWidth * CharacterSpacing + 2 * borderSize) / consoleCamera.AspectRatio / 2;
+                cameraSize = ((WindowWidth + 0.3f) * CharacterSpacing + 2 * borderSize) / consoleCamera.AspectRatio / 2;
             }
+
             consoleCamera.SetCameraSize(cameraSize);
 
-            if (centerContentX)
-            {
-                consoleRectTransform.position = new Vector3(0, 0, 0);
-            }
-            else
-            {
-                consoleRectTransform.position =
-                    new Vector3(
-                        borderSize - consoleCamera.AspectRatio * cameraSize + consoleRectTransform.sizeDelta.x / 2,
-                        0, 0);
-            }
-            
-            if (centerContentY)
-            {
-                consoleRectTransform.position = new Vector3(consoleRectTransform.position.x, WindowHeight * characterHeight / 2, 0);
-            }
-            else
-            {
-                consoleRectTransform.position =
-                    new Vector3(
-                        consoleRectTransform.position.x,
-                        cameraSize, 0);
-            }
+
+            consoleRectTransform.position =
+                new Vector3(
+                    borderSize - consoleCamera.AspectRatio * cameraSize + consoleRectTransform.sizeDelta.x / 2,
+                    0, 0);
+
+
+            consoleRectTransform.position =
+                new Vector3(
+                    consoleRectTransform.position.x,
+                    cameraSize, 0);
         }
     }
 }

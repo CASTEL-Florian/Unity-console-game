@@ -1,4 +1,5 @@
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityConsole;
@@ -67,17 +68,18 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// Reads all lines in a file and either prints it line by line or letter by letter.
         /// </summary>
-        public static async UniTask PrintTextFile(string path, bool letterByLetter)
+        public static async UniTask PrintTextFile(string path, bool letterByLetter, CancellationToken cancellationToken = default)
         {
-            string[] fileLines = await FileLoader.ReadAllLinesAsync(Path.Combine(Application.streamingAssetsPath, path));
+            string[] fileLines = await FileLoader.ReadAllLinesAsync(Path.Combine(Application.streamingAssetsPath, path), cancellationToken);
 
             if (letterByLetter)
             {
 #if !DEBUG_MODE
                 foreach (string line in fileLines)
                 {
-                    await PrintStringCharByChar(line, new Color(0.9f, 0.9f, 0.9f));
-                    await Console.Sleep(500);
+                    await PrintStringCharByChar(line, new Color(0.9f, 0.9f, 0.9f), cancellationToken);
+                    await Console.Sleep(500, cancellationToken);
+                    if (cancellationToken.IsCancellationRequested) return;
                     Console.WriteLine();
                 }
 #endif
@@ -101,18 +103,18 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// Prints a string one character at a time. Can write text in color specified.
         /// </summary>
-        public static async UniTask PrintStringCharByChar(string line, Color color)
+        public static async UniTask PrintStringCharByChar(string line, Color color, CancellationToken cancellationToken = default)
         {
             ChangeForegroundColor(color);
             foreach (char c in line)
             {
                 Console.Write(c);
 #if DEBUG_MODE
-                await Console.Sleep(5);
+                await Console.Sleep(5, cancellationToken);
 #endif
 
 #if !DEBUG_MODE
-                await Console.Sleep(25);
+                await Console.Sleep(25, cancellationToken);
 #endif
             }
             ChangeForegroundColor(Color.gray);

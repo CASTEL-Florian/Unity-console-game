@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityConsole;
@@ -71,9 +72,9 @@ namespace Text_Based_Game.Classes
             WeaponInventory.Add(loot);
         }
         
-        public async UniTask LoadEnvironmentObservations()
+        public async UniTask LoadEnvironmentObservations(CancellationToken cancellationToken = default)
         {
-            EnvironmentObservations = await FileLoader.ReadAllLinesAsync(Path.Combine(Application.streamingAssetsPath, Globals.EnvironmentObservationsPath));
+            EnvironmentObservations = await FileLoader.ReadAllLinesAsync(Path.Combine(Application.streamingAssetsPath, Globals.EnvironmentObservationsPath), cancellationToken);
         }
 
         /// <summary>
@@ -97,7 +98,7 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// 
         /// </summary>
-        public async UniTask ChangeEquipmentScreen()
+        public async UniTask ChangeEquipmentScreen(CancellationToken cancellationToken = default)
         {
             if (WeaponInventory.Count == 0)
             {
@@ -109,7 +110,7 @@ namespace Text_Based_Game.Classes
                 }
                 else
                 {
-                    await ShowStats();
+                    await ShowStats(cancellationToken);
                 }
                 return;
             }
@@ -149,7 +150,7 @@ namespace Text_Based_Game.Classes
             bool validInput = false;
             do
             {
-                string input = await Console.ReadLine();
+                string input = await Console.ReadLine(cancellationToken);
                 _ = int.TryParse(input, out int valueAsInt);
                 if (input.ToLower() == "r" || valueAsInt <= WeaponInventory.Count && valueAsInt != 0)
                 {
@@ -158,11 +159,11 @@ namespace Text_Based_Game.Classes
                     {
                         if (CurrentLocation != Location.Town)
                         {
-                            await GameManagerRef.CurrentPath.ShowOptionsAfterInteractiveEvent();
+                            await GameManagerRef.CurrentPath.ShowOptionsAfterInteractiveEvent(cancellationToken);
                         }
                         else
                         {
-                            await GameManagerRef.ShowTownOptions();
+                            await GameManagerRef.ShowTownOptions(cancellationToken);
                         }
                         return;
                     }
@@ -171,11 +172,11 @@ namespace Text_Based_Game.Classes
                         EquipWeapon(WeaponInventory[valueAsInt - 1]);
                         if (CurrentLocation != Location.Town)
                         {
-                            await GameManagerRef.CurrentPath.ShowOptionsAfterInteractiveEvent();
+                            await GameManagerRef.CurrentPath.ShowOptionsAfterInteractiveEvent(cancellationToken);
                         }
                         else
                         {
-                            await GameManagerRef.ShowTownOptions();
+                            await GameManagerRef.ShowTownOptions(cancellationToken);
                         }
                     }
                 }
@@ -219,7 +220,8 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// 
         /// </summary>
-        public async UniTask ShowStats()
+        /// <param name="cancellationToken"></param>
+        public async UniTask ShowStats(CancellationToken cancellationToken = default)
         {
             Console.WriteLine("\nYour Stats: ");
             Console.WriteLine($"Level: {CurrentLevel}");
@@ -245,56 +247,58 @@ namespace Text_Based_Game.Classes
             if (AvailableSkillpoints > 0)
             {
                 Console.Write("\nWould you like to increase (v)itality or (s)trength, (r)espec or (c)ontinue to your adventure?: ");
-                KeyCode key = await Console.ReadKey();
+                KeyCode key = await Console.ReadKey(cancellationToken: cancellationToken);
                 bool validInput = false;
                 if (key == KeyCode.V || key == KeyCode.S || key == KeyCode.R || key == KeyCode.C) validInput = true;
                 while (!validInput)
                 {
                     Console.Write("\nNo choice was made, please try again: ");
-                    key = await Console.ReadKey();
+                    key = await Console.ReadKey(cancellationToken: cancellationToken);
+                    if (cancellationToken.IsCancellationRequested) return;
                     if (key == KeyCode.V || key == KeyCode.S || key == KeyCode.R || key == KeyCode.C) validInput = true;
                 }
                 Console.WriteLine("\n");
                 switch (key)
                 {
                     case KeyCode.C:
-                        await GameManagerRef.ShowTownOptions();
+                        await GameManagerRef.ShowTownOptions(cancellationToken);
                         break;
                     case KeyCode.V:
                     case KeyCode.S:
                         IncreaseStatWithSkillpoints(key);
-                        await ShowStats();
+                        await ShowStats(cancellationToken);
                         break;
                     case KeyCode.R:
                         ResetSkillPoints();
-                        await ShowStats();
+                        await ShowStats(cancellationToken);
                         break;
                 }
             }
             else
             {
                 Console.Write("\nWould you like to (r)espec, change your (e)quipment or (c)ontinue to your adventure?: ");
-                KeyCode key = await Console.ReadKey();
+                KeyCode key = await Console.ReadKey(cancellationToken: cancellationToken);
                 bool validInput = false;
                 if (key == KeyCode.R || key == KeyCode.E || key == KeyCode.C) validInput = true;
                 while (!validInput)
                 {
                     Console.Write("\nNo choice was made, please try again: ");
-                    key = await Console.ReadKey();
+                    key = await Console.ReadKey(cancellationToken: cancellationToken);
+                    if (cancellationToken.IsCancellationRequested) return;
                     if (key == KeyCode.R || key == KeyCode.E || key == KeyCode.C) validInput = true;
                 }
                 //Console.WriteLine("\n");
                 switch (key)
                 {
                     case KeyCode.C:
-                        await GameManagerRef.ShowTownOptions();
+                        await GameManagerRef.ShowTownOptions(cancellationToken);
                         break;
                     case KeyCode.R:
                         ResetSkillPoints();
-                        await ShowStats();
+                        await ShowStats(cancellationToken);
                         break;
                     case KeyCode.E:
-                        await ChangeEquipmentScreen();
+                        await ChangeEquipmentScreen(cancellationToken);
                         break;
                 }
             }
@@ -465,10 +469,10 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// Gets a random sentence from an array and writes it to the console
         /// </summary>
-        public async UniTask SpeakAboutEnvironment()
+        public async UniTask SpeakAboutEnvironment(CancellationToken cancellationToken = default)
         {
             string randomSentence = EnvironmentObservations[Random.Next(EnvironmentObservations.Length)];
-            await TextHelper.PrintStringCharByChar(randomSentence, Color.white);
+            await TextHelper.PrintStringCharByChar(randomSentence, Color.white, cancellationToken);
             TextHelper.LineSpacing(0);
         }
     }

@@ -1,5 +1,6 @@
 #nullable enable
 using System.IO;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityConsole;
 using UnityEngine;
@@ -135,10 +136,10 @@ namespace Text_Based_Game.Classes
         /// <summary>
         /// Reads file containing mob names and returns a random name
         /// </summary>
-        public async UniTask GenerateRandomMobName()
+        public async UniTask GenerateRandomMobName(CancellationToken cancellationToken = default)
         {
             string[] allNames = await FileLoader.ReadAllLinesAsync
-(Path.Combine(Application.streamingAssetsPath, Globals.MobNamesPath));
+(Path.Combine(Application.streamingAssetsPath, Globals.MobNamesPath), cancellationToken);
             Name = allNames[Random.Next(allNames.Length)];
         }
     }
