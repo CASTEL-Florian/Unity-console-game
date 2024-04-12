@@ -1,4 +1,4 @@
-# C# Console Game Porting to Unity
+# .NET Console Game Porting to Unity
 ![Capture d'écran 2024-04-03 213709](https://github.com/CASTEL-Florian/Unity-console-game/assets/106156391/0fd2c67a-92d8-4db6-972f-1c71ed94ed11)
 *The same game running in the console (on the right) and in Unity (on the left).*
 
@@ -18,11 +18,10 @@ Console.ResetColor();
 Console.ForegroundColor {get; set; }
 Console.BackgroundColor {get; set; }
 ```
-Console.BackgroundColor is not supported.
 
-The project contains a porting of the text adventure game **Alaric's Adventure: the Beginning**.
+The project contains the porting of a few games from https://github.com/dotnet/dotnet-console-games
 
-Original game by Mekkmann : https://mekkmann.itch.io/alarics-adventure-text-based-game
+It also contains the porting of the text adventure game **Alaric's Adventure: the Beginning**. Original game by Mekkmann : https://mekkmann.itch.io/alarics-adventure-text-based-game
 
 <br><br>
 
@@ -95,9 +94,12 @@ public class Program : MonoBehaviour
 
 - Replace the colors in the game with Unity colors.
 <br>
+- Put the resources of the project in a folder such as Resources or StreamingAssets and change the paths in the code accordingly.
 
 # WebGL support
 The carriage return character produces weird results in WebGL TextMeshPro. The character is therefore automatically removed from texts before printing in the console.
+
+`Console.Beep()` isn't supported in WebGL.
 
 The framework support WebGL using [UniTask](https://github.com/Cysharp/UniTask) instead of Task for async method.
 
@@ -108,7 +110,7 @@ public static async UniTask<string> ReadAllTextAsync(string path);
 public static async UniTask<byte[]> ReadAllBytesAsync(string path);
 ```
 
-These methods need to be executed in asynchronous code. For example, you may nee to move the calls async methods out of the costructors:
+These methods need to be executed in asynchronous code. For example, you may nee to move the calls async methods out of the constructors:
 ```C#
 private void CreateEnemy(string namePath){
     Enemy enemy = new Enemy(namePath);
@@ -133,5 +135,3 @@ public async UniTask LoadNameFromFile(path){
   Name = await FileLoader.ReadAllLinesAsync(string path);
 }
 ```
-
-- Put the resources of the project in a folder such as Resources or StreamingAssets and change the paths in the code accordingly.
