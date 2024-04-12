@@ -55,6 +55,8 @@ using Console = UnityConsole.Console;
 `string input = Console.ReadLine();` with `string input = await Console.ReadLine();`
 <br>
 
+- `await Console.ReadKey();` doesn't react to key presses that don't appear in Input.inputString (like arrow buttons). To check for these keys, use the `Console.GetKeyState(KeyCode key)` method. 
+
 - Turn every method that call a read method on the Console into an async function. The read methods have [cancellation](https://github.com/Cysharp/UniTask?tab=readme-ov-file#cancellation-and-exception-handling) support.
 
 **In the following code, I use UniTask instead of Task for the WebGL support. See the WebGL support section for more information**
